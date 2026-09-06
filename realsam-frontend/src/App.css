@@ -1,0 +1,65 @@
+.main-content {
+  width: min(1100px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 56px 0;
+}
+
+.welcome-panel {
+  max-width: 760px;
+  padding: 48px;
+  border: 2px solid var(--colour-border);
+  border-radius: 16px;
+  background-color: var(--colour-white);
+  box-shadow: 0 8px 24px rgb(19 20 72 / 8%);
+}
+
+.welcome-panel__eyebrow {
+  margin: 0 0 8px;
+  color: var(--colour-pink);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.welcome-panel h2 {
+  margin: 0 0 16px;
+  color: var(--colour-navy);
+  font-size: clamp(32px, 5vw, 52px);
+}
+
+.welcome-panel p {
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+.primary-button {
+  min-height: 52px;
+  margin-top: 16px;
+  padding: 12px 24px;
+  border: 2px solid var(--colour-navy);
+  border-radius: 8px;
+  color: white;
+  background-color: var(--colour-navy);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  border-color: var(--colour-pink);
+  background-color: var(--colour-pink);
+}
+
+.primary-button:focus-visible {
+  outline: 4px solid var(--colour-pink);
+  outline-offset: 4px;
+}
+
+@media (max-width: 650px) {
+  .main-content {
+    width: min(100% - 24px, 1100px);
+    padding: 24px 0;
+  }
+
+  .welcome-panel {
+    padding: 28px 22px;
+  }
+}
