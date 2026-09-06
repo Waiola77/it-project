@@ -1,16 +1,45 @@
 package org.example.consultant.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.JoinColumn;
+
 import java.util.List;
 
+@Entity
+@Table(name = "books")
 public class Book {
 
+    @Id
     private String recordId;
+
     private String title;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "book_authors_raw",
+            joinColumns = @JoinColumn(name = "record_id")
+    )
+    @Column(name = "author")
     private List<String> authorsRaw;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String source;
-
     private String normalizedTitle;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "book_normalized_authors",
+            joinColumns = @JoinColumn(name = "record_id")
+    )
+
+    @Column(name = "author")
     private List<String> normalizedAuthors;
     private boolean hasUsableDescription;
 
