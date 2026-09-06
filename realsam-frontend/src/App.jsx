@@ -1,37 +1,56 @@
 import { useState } from "react";
-import Header from "./components/Header";
+import { Route, Routes } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import ProfilePage from "./pages/ProfilePage";
+import { profileActivityByUser } from "./mocks/profileActivity";
 import { users } from "./mocks/users";
 import "./App.css";
 
 function App() {
   const [selectedUser, setSelectedUser] = useState(users[0]);
+  const [profileActivity, setProfileActivity] = useState(profileActivityByUser);
+
+  function handleSavedBookChange(userId, collection, bookId, isSaved) {
+    setProfileActivity((currentActivity) => {
+      const userActivity = currentActivity[userId];
+      const currentBooks = userActivity[collection];
+      const updatedBooks = isSaved
+        ? [...currentBooks, bookId]
+        : currentBooks.filter((id) => id !== bookId);
+
+      return {
+        ...currentActivity,
+        [userId]: {
+          ...userActivity,
+          [collection]: updatedBooks,
+        },
+      };
+    });
+  }
 
   return (
-    <>
-      <Header
-        users={users}
-        selectedUser={selectedUser}
-        onUserChange={setSelectedUser}
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <HomePage
+            users={users}
+            selectedUser={selectedUser}
+            onUserChange={setSelectedUser}
+          />
+        }
       />
-
-      <main className="main-content">
-        <section className="welcome-panel">
-          <p className="welcome-panel__eyebrow">
-            Welcome, {selectedUser.name}
-          </p>
-
-          <h2>Find your next book</h2>
-
-          <p>
-            Your current interests: {selectedUser.preferences}
-          </p>
-
-          <button type="button" className="primary-button">
-            Get recommendations
-          </button>
-        </section>
-      </main>
-    </>
+      <Route
+        path="/profile"
+        element={
+          <ProfilePage
+            selectedUser={selectedUser}
+            activity={profileActivity[selectedUser.id]}
+            onSavedBookChange={handleSavedBookChange}
+          />
+        }
+      />
+    </Routes>
   );
 }
 

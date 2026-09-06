@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# React frontend
+realsam-frontend/node_modules/
+realsam-frontend/dist/
+realsam-frontend/.env
+realsam-frontend/.env.local
+
+# macOS
+.DS_Store
