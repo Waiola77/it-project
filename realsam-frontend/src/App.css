@@ -1,0 +1,20 @@
+.primary-button {
+  min-height: 52px;
+  padding: 12px 24px;
+  border: 2px solid var(--colour-navy);
+  border-radius: 8px;
+  color: white;
+  background-color: var(--colour-navy);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  border-color: var(--colour-pink);
+  background-color: var(--colour-pink);
+}
+
+.primary-button:focus-visible {
+  outline: 4px solid var(--colour-pink);
+  outline-offset: 4px;
+}
