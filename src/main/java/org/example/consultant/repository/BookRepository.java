@@ -32,4 +32,19 @@ public interface BookRepository extends JpaRepository<Book, String> {
             @Param("recordId") String recordId,
             @Param("embedding") String embedding
     );
+
+    @Query(value = """
+        SELECT b.*
+        FROM books b
+        WHERE b.embedding IS NOT NULL
+          AND b.source = :source
+        ORDER BY b.embedding <=> CAST(:queryVector AS vector)
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<Book> findSimilarBooksBySource(
+            @Param("queryVector") String queryVector,
+            @Param("source") String source,
+            @Param("limit") int limit
+    );
+
 }
