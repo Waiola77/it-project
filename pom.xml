@@ -53,24 +53,28 @@
             <artifactId>spring-boot-starter-webmvc-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <!--langchain4j dependency-->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-open-ai-spring-boot4-starter</artifactId>
             <version>1.19.0-beta29</version>
         </dependency>
+
         <!--AiServices dependency-->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-spring-boot-starter</artifactId>
             <version>1.19.0-beta29</version>
         </dependency>
+
         <!--rag-easy dependency-->
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-easy-rag</artifactId>
             <version>1.19.0-beta29</version>
         </dependency>
+
         <!-- Local embedding model -->
         <dependency>
             <groupId>dev.langchain4j</groupId>
