@@ -15,7 +15,7 @@ public class BookRecommendationController {
     private BookChatService bookChatService;
 
     @RequestMapping("/chat")
-    public RecommendationResponse chat(String message) {
-        return bookChatService.chat(message);
+    public RecommendationResponse chat(String userId, String message) {
+        return bookChatService.chat(userId, message);
     }
 }

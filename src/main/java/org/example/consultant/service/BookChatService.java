@@ -16,17 +16,38 @@ public class BookChatService {
 
     private final BookRetrievalService retrievalService;
     private final BookRecommendationServices aiService;
+    private final UserFeedbackService feedbackService;
 
     public BookChatService(BookRetrievalService retrievalService,
-                           BookRecommendationServices aiService) {
+                           BookRecommendationServices aiService,
+                           UserFeedbackService feedbackService) {
         this.retrievalService = retrievalService;
         this.aiService = aiService;
+        this.feedbackService = feedbackService;
     }
 
-    public RecommendationResponse chat(String userMessage) {
-        List<Book> similarBooks = retrievalService.findSimilarBooksByText(userMessage, CANDIDATE_LIMIT);
+    public RecommendationResponse chat(String userId, String userMessage) {
 
-        String context = similarBooks.stream()
+        List<Book> similarBooks =
+                retrievalService.findSimilarBooksByTextAndSource(
+                        userMessage,
+                        "VA",
+                        CANDIDATE_LIMIT
+                );
+
+        List<String> rejectedBookIds =
+                feedbackService.getRejectedBooks(userId)
+                        .stream()
+                        .map(feedback -> feedback.getBookId())
+                        .toList();
+
+        List<Book> filteredBooks =
+                similarBooks.stream()
+                        .filter(book ->
+                                !rejectedBookIds.contains(book.getRecordId()))
+                        .toList();
+
+        String context = filteredBooks.stream()
                 .map(b -> "- Record ID: %s  Title: %s  Author: %s  Description: %s".formatted(
                         b.getRecordId(),
                         b.getTitle(),
