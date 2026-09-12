@@ -17,13 +17,16 @@ public class BookChatService {
     private final BookRetrievalService retrievalService;
     private final BookRecommendationServices aiService;
     private final UserFeedbackService feedbackService;
+    private final UserPreferenceService preferenceService;
 
     public BookChatService(BookRetrievalService retrievalService,
                            BookRecommendationServices aiService,
-                           UserFeedbackService feedbackService) {
+                           UserFeedbackService feedbackService,
+                           UserPreferenceService preferenceService) {
         this.retrievalService = retrievalService;
         this.aiService = aiService;
         this.feedbackService = feedbackService;
+        this.preferenceService = preferenceService;
     }
 
     public RecommendationResponse chat(String userId, String userMessage) {
@@ -59,6 +62,13 @@ public class BookChatService {
             context = "No relevant books were found.\n";
         }
 
-        return aiService.chat(userMessage, context);
+        String preferenceContext =
+                preferenceService.buildPreferenceContext(userId);
+
+        return aiService.chat(
+                userMessage,
+                context,
+                preferenceContext
+        );
     }
 }
