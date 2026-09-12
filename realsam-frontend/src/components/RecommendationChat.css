@@ -1,0 +1,116 @@
+.recommendation-chat {
+  min-width: 0;
+  padding-top: 14px;
+}
+
+.recommendation-chat h1 {
+  margin: 0 0 34px;
+  color: var(--colour-navy);
+  font-size: clamp(38px, 5vw, 68px);
+  line-height: 1.05;
+}
+
+.assistant-message {
+  display: flex;
+  max-width: 900px;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 2px solid var(--colour-border);
+  border-radius: 18px;
+  background: var(--colour-white);
+  box-shadow: 0 8px 24px rgb(19 20 72 / 6%);
+}
+
+.assistant-message__avatar {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--colour-white);
+  background: var(--colour-navy);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.assistant-message strong {
+  color: var(--colour-navy);
+  font-size: 20px;
+}
+
+.assistant-message p {
+  margin: 8px 0 0;
+  color: #515970;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.preference-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+
+.preference-suggestions button {
+  min-height: 46px;
+  padding: 9px 18px;
+  border: 2px solid var(--colour-border);
+  border-radius: 999px;
+  color: var(--colour-navy);
+  background: var(--colour-white);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.preference-suggestions button:hover {
+  border-color: var(--colour-pink);
+}
+
+.recommendation-chat__hint {
+  color: #61677d;
+}
+
+.recommendation-chat__input-row {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.recommendation-chat textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 18px;
+  resize: vertical;
+  border: 2px solid var(--colour-border);
+  border-radius: 12px;
+  color: var(--colour-text);
+  background: var(--colour-white);
+  line-height: 1.5;
+}
+
+.recommendation-chat textarea:focus-visible,
+.preference-suggestions button:focus-visible {
+  outline: 4px solid var(--colour-pink);
+  outline-offset: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 600px) {
+  .recommendation-chat__input-row {
+    flex-direction: column;
+  }
+}

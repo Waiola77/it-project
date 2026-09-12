@@ -1,0 +1,18 @@
+.home-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 320px) minmax(0, 1fr);
+  width: min(1400px, calc(100% - 48px));
+  min-height: calc(100vh - 114px);
+  margin: 0 auto;
+  gap: 56px;
+  padding: 48px 0 64px;
+}
+
+@media (max-width: 850px) {
+  .home-layout {
+    grid-template-columns: 1fr;
+    width: min(100% - 28px, 720px);
+    gap: 36px;
+    padding-top: 28px;
+  }
+}
