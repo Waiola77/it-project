@@ -1,0 +1,125 @@
+[
+  {
+    "id": "romance-reader",
+    "name": "Grace",
+    "statedPreferences": "I enjoy romantic, emotional stories about relationships, family, and personal journeys.",
+    "favoriteBookTitles": [
+      "Dark desire",
+      "Duty and desire",
+      "With love from Bliss"
+    ],
+    "likedAuthors": [],
+    "dislikedSubjects": [
+      "crime",
+      "violent thrillers"
+    ],
+    "readingHistoryRecordIds": [
+      "56506",
+      "56461"
+    ],
+    "rejectedRecordIds": [
+      "56406"
+    ]
+  },
+  {
+    "id": "science-reader",
+    "name": "Arthur",
+    "statedPreferences": "I enjoy science, space, technology, and imaginative adventure stories.",
+    "favoriteBookTitles": [
+      "Zero gravity",
+      "Rocket science",
+      "Violent stars"
+    ],
+    "likedAuthors": [],
+    "dislikedSubjects": [
+      "romance",
+      "family drama"
+    ],
+    "readingHistoryRecordIds": [
+      "56692",
+      "56390"
+    ],
+    "rejectedRecordIds": [
+      "56395"
+    ]
+  },
+  {
+    "id": "self-improvement-reader",
+    "name": "Margaret",
+    "statedPreferences": "I like practical books about personal growth, confidence, health, and success.",
+    "favoriteBookTitles": [
+      "The 7 habits of highly effective teens",
+      "Best foot forward",
+      "The good body"
+    ],
+    "likedAuthors": [],
+    "dislikedSubjects": [
+      "murder",
+      "dark mystery"
+    ],
+    "readingHistoryRecordIds": [
+      "56375",
+      "56597"
+    ],
+    "rejectedRecordIds": [
+      "56535"
+    ]
+  },
+  {
+    "id": "mystery-reader",
+    "name": "Helen",
+    "statedPreferences": "I enjoy mysteries, crime stories, secrets, suspense, and investigative plots.",
+    "favoriteBookTitles": [
+      "A palette for murder",
+      "If looks could kill",
+      "The third secret"
+    ],
+    "likedAuthors": [],
+    "dislikedSubjects": [
+      "children's songs",
+      "simple nursery stories"
+    ],
+    "readingHistoryRecordIds": [
+      "56665",
+      "56406"
+    ],
+    "rejectedRecordIds": [
+      "54965"
+    ]
+  },
+  {
+    "id": "history-adventure-reader",
+    "name": "Frank",
+    "statedPreferences": "I enjoy history, war stories, survival, travel, biography, and adventure.",
+    "favoriteBookTitles": [
+      "The Bulldog Track : a grandson's story of an ordinary man's war and survival on the other Kokoda trail",
+      "Ghosts of targets past : the lives and losses of a Lancaster crew in 1944-45",
+      "The sword of Attila : a novel of the last years of Rome"
+    ],
+    "likedAuthors": [],
+    "dislikedSubjects": [
+      "beauty",
+      "body image"
+    ],
+    "readingHistoryRecordIds": [
+      "56603",
+      "56411"
+    ],
+    "rejectedRecordIds": [
+      "56389"
+    ]
+  },
+  {
+    "id": "new-gentle-fiction-reader",
+    "name": "Eleanor",
+    "statedPreferences": "I am new and would like gentle fiction with warmth, relationships, and easy-to-follow stories.",
+    "favoriteBookTitles": [],
+    "likedAuthors": [],
+    "dislikedSubjects": [
+      "war",
+      "violent crime"
+    ],
+    "readingHistoryRecordIds": [],
+    "rejectedRecordIds": []
+  }
+]
