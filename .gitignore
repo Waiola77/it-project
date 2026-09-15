@@ -36,3 +36,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Frontend dependencies ###
+realsam-frontend/node_modules/

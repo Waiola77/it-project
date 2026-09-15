@@ -62,3 +62,54 @@ BUILD SUCCESS
 
 # Test semantic recommendation using real catalogue data
 ./mvnw -Dtest=RealBookRetrievalTest test
+
+## Running the Application
+
+The application consists of a Spring Boot backend and a React/Vite frontend.
+Both services need to be running for the full application to work.
+
+### 1. Start the Backend
+
+From the project root directory:
+
+```bash
+./mvnw spring-boot:run
+```
+
+The backend will run at:
+
+`http://localhost:8080`
+
+### 2. Start the Frontend
+
+Open a separate terminal and navigate to the frontend directory:
+
+```bash
+cd realsam-frontend
+```
+
+Install the frontend dependencies if running the project for the first time:
+
+```bash
+npm install
+```
+
+Then start the Vite development server:
+
+```bash
+npm run dev
+```
+
+The frontend will run at:
+
+`http://localhost:5173`
+
+### 3. Run the Full Application
+
+Keep both the backend and frontend terminals running at the same time.
+
+Open the frontend in a browser:
+
+`http://localhost:5173`
+
+The frontend will send recommendation requests to the Spring Boot backend running on port `8080`.

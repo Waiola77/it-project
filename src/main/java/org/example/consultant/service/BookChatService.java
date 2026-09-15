@@ -5,6 +5,8 @@ import org.example.consultant.aiservices.IntentExtractionService;
 import org.example.consultant.model.Book;
 import org.example.consultant.model.SearchIntent;
 import org.springframework.stereotype.Service;
+import org.example.consultant.model.BookRecommendation;
+import org.example.consultant.model.RecommendationResponse;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,22 +14,30 @@ import java.util.stream.Collectors;
 @Service
 public class BookChatService {
 
+    private static final int CANDIDATE_LIMIT = 20;
+
     private final BookRetrievalService retrievalService;
     private final BookRecommendationServices aiService;
     private final IntentExtractionService intentExtractionService;
     private final BookNormalizationService normalizationService;
+    private final UserFeedbackService feedbackService;
+    private final UserPreferenceService preferenceService;
 
     public BookChatService(BookRetrievalService retrievalService,
                            BookRecommendationServices aiService,
                            IntentExtractionService intentExtractionService,
-                           BookNormalizationService normalizationService) {
+                           BookNormalizationService normalizationService,
+                           UserFeedbackService feedbackService,
+                           UserPreferenceService preferenceService) {
         this.retrievalService = retrievalService;
         this.aiService = aiService;
         this.intentExtractionService = intentExtractionService;
         this.normalizationService = normalizationService;
+        this.feedbackService = feedbackService;
+        this.preferenceService = preferenceService;
     }
 
-    public String chat(String userMessage) {
+    public RecommendationResponse chat(String userId, String userMessage) {
 
         SearchIntent intent = intentExtractionService.extractIntent(userMessage);
 
@@ -38,20 +48,48 @@ public class BookChatService {
                         || (intent.getAuthor() != null && !intent.getAuthor().isBlank());
 
         if (hasExactTarget) {
-            String normalizedTitle = normalizationService.normalizeTitle(intent.getTitle());
-            String normalizedAuthor = normalizationService.normalizeAuthor(intent.getAuthor());
-            similarBooks = retrievalService.findByTitleOrAuthor(normalizedTitle, normalizedAuthor);
+            String normalizedTitle =
+                    normalizationService.normalizeTitle(intent.getTitle());
+            String normalizedAuthor =
+                    normalizationService.normalizeAuthor(intent.getAuthor());
+
+            similarBooks =
+                    retrievalService.findByTitleOrAuthor(
+                            normalizedTitle,
+                            normalizedAuthor
+                    );
         } else {
-            String queryText = (intent.getSemanticQuery() != null && !intent.getSemanticQuery().isBlank())
-                    ? intent.getSemanticQuery()
-                    : userMessage;
-            similarBooks = retrievalService.findSimilarBooksByText(queryText, 5);
+            String queryText =
+                    (intent.getSemanticQuery() != null
+                            && !intent.getSemanticQuery().isBlank())
+                            ? intent.getSemanticQuery()
+                            : userMessage;
+
+            similarBooks =
+                    retrievalService.findSimilarBooksByTextAndSource(
+                            queryText,
+                            "VA",
+                            CANDIDATE_LIMIT
+                    );
         }
 
-        String context = similarBooks.stream()
-                .map(b -> "- %s Author：%s  Description：%s".formatted(
+        List<String> rejectedBookIds =
+                feedbackService.getRejectedBooks(userId)
+                        .stream()
+                        .map(feedback -> feedback.getBookId())
+                        .toList();
+
+        List<Book> filteredBooks =
+                similarBooks.stream()
+                        .filter(book ->
+                                !rejectedBookIds.contains(book.getRecordId()))
+                        .toList();
+
+        String context = filteredBooks.stream()
+                .map(b -> "- Record ID: %s  Title: %s  Author: %s  Description: %s".formatted(
+                        b.getRecordId(),
                         b.getTitle(),
-                        String.join(",", b.getAuthorsRaw()),
+                        String.join(", ", b.getAuthorsRaw()),
                         b.getDescription()))
                 .collect(Collectors.joining("\n"));
 
@@ -59,6 +97,13 @@ public class BookChatService {
             context = "No relevant books were found.\n";
         }
 
-        return aiService.chat(userMessage, context);
+        String preferenceContext =
+                preferenceService.buildPreferenceContext(userId);
+
+        return aiService.chat(
+                userMessage,
+                context,
+                preferenceContext
+        );
     }
 }
