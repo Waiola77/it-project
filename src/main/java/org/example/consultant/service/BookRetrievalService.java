@@ -57,4 +57,8 @@ public class BookRetrievalService {
                 limit
         );
     }
+    public List<Book> findByTitleOrAuthor(String title, String author) {
+        return bookRepository.findByTitleOrAuthor(title, author);
+    }
+
 }

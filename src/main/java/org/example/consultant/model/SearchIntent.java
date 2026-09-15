@@ -1,10 +1,19 @@
 package org.example.consultant.model;
 
+import dev.langchain4j.model.output.structured.Description;
+
 public class SearchIntent {
 
+    @Description("The book theme, mood, or genre preference described by the user, used for semantic search, e.g. 'a heartwarming mystery novel'")
     private String semanticQuery;
+
+    @Description("The specific book title explicitly mentioned by the user; leave blank if not mentioned")
     private String title;
+
+    @Description("The specific author explicitly mentioned by the user; leave blank if not mentioned")
     private String author;
+
+    @Description("The specific catalogue/source the user explicitly asked to filter by; leave blank if not mentioned")
     private String source;
 
     public SearchIntent() {

@@ -47,4 +47,15 @@ public interface BookRepository extends JpaRepository<Book, String> {
             @Param("limit") int limit
     );
 
+    @Query("""
+            SELECT DISTINCT b FROM Book b
+            LEFT JOIN b.normalizedAuthors a
+            WHERE (:title IS NULL OR b.normalizedTitle LIKE %:title%)
+              AND (:author IS NULL OR a LIKE %:author%)
+            """)
+    List<Book> findByTitleOrAuthor(
+            @Param("title") String title,
+            @Param("author") String author
+    );
+
 }
