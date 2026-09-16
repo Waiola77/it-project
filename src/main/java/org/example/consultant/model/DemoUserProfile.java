@@ -13,6 +13,7 @@ public class DemoUserProfile {
     private List<String> dislikedSubjects;
     private List<String> readingHistoryRecordIds;
     private List<String> rejectedRecordIds;
+    private List<String> savedBookRecordIds;
 
     public DemoUserProfile() {
     }
@@ -79,5 +80,13 @@ public class DemoUserProfile {
 
     public void setRejectedRecordIds(List<String> rejectedRecordIds) {
         this.rejectedRecordIds = rejectedRecordIds;
+    }
+
+    public List<String> getSavedBookRecordIds() {
+        return savedBookRecordIds;
+    }
+
+    public void setSavedBookRecordIds(List<String> savedBookRecordIds) {
+        this.savedBookRecordIds = savedBookRecordIds;
     }
 }
