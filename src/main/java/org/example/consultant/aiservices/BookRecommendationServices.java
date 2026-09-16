@@ -30,6 +30,7 @@ public interface BookRecommendationServices {
         - Do not make up or recommend books outside the candidate list.
         - Use liked books as positive preference signals.
         - Use rejected books as negative preference signals.
+        - Use books saved to bookshelves or reading lists as positive interest signals, even if they have not been read yet.
         - The user's current request should remain the primary signal.
         - Do not assume that liking or rejecting one book means the user likes or dislikes an entire genre.
         - Return up to 10 recommendations.
