@@ -5,6 +5,8 @@ public class BookRecommendation {
     private String recordId;
     private String title;
     private String reason;
+    private String author;
+    private String description;
     private int rank;
 
     public BookRecommendation() {
@@ -13,6 +15,22 @@ public class BookRecommendation {
     public BookRecommendation(String recordId, String title, String reason, int rank) {
         this.recordId = recordId;
         this.title = title;
+        this.reason = reason;
+        this.rank = rank;
+    }
+
+    public BookRecommendation(
+            String recordId,
+            String title,
+            String author,
+            String description,
+            String reason,
+            int rank) {
+
+        this.recordId = recordId;
+        this.title = title;
+        this.author = author;
+        this.description = description;
         this.reason = reason;
         this.rank = rank;
     }
@@ -31,6 +49,22 @@ public class BookRecommendation {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getReason() {

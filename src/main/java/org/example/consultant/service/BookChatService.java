@@ -100,10 +100,29 @@ public class BookChatService {
         String preferenceContext =
                 preferenceService.buildPreferenceContext(userId);
 
-        return aiService.chat(
+        RecommendationResponse response = aiService.chat(
                 userMessage,
                 context,
                 preferenceContext
         );
+
+        for (BookRecommendation recommendation : response.getRecommendations()) {
+
+            Book matchedBook = filteredBooks.stream()
+                    .filter(book -> book.getRecordId().equals(recommendation.getRecordId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (matchedBook != null) {
+                recommendation.setAuthor(
+                        String.join(", ", matchedBook.getAuthorsRaw())
+                );
+                recommendation.setDescription(
+                        matchedBook.getDescription()
+                );
+            }
+        }
+
+        return response;
     }
 }
