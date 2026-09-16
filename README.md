@@ -16,6 +16,7 @@ The system recommends books from the RealSAM catalogue based on a user's natural
 - [Technology Stack](#technology-stack)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
+- [Full Catalogue Ingestion](#full-catalogue-ingestion)
 - [Running the Application](#running-the-application)
 - [API Documentation](#api-documentation)
 - [Demo Users](#demo-users)
@@ -91,6 +92,7 @@ Demo profiles provide initial user information such as:
 - Disliked subjects
 - Reading history
 - Previously rejected books
+- Saved books / reading-list interests
 
 These profiles allow personalised recommendation behaviour to be demonstrated without requiring a production user account system.
 
@@ -292,6 +294,46 @@ Do not commit real credentials or API keys to the repository.
 
 ---
 
+## Full Catalogue Ingestion
+
+The backend supports ingestion of the full RealSAM VA catalogue from Solr.
+
+At the time of testing, the VA Solr core contained **25,025 book records**. The catalogue size is retrieved dynamically from Solr rather than being hard-coded in the application.
+
+### First-Time Local Catalogue Setup
+
+Developers using their own local PostgreSQL database should run the full catalogue ingestion once after completing the database and environment configuration.
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.arguments=--ingest-all
+```
+
+The ingestion process:
+
+1. Retrieves the current catalogue size from the RealSAM VA Solr core.
+2. Fetches catalogue books in batches.
+3. Stores the book metadata in PostgreSQL.
+4. Generates local MiniLM embeddings for books with usable descriptions.
+5. Skips embedding generation for books that already have an embedding.
+
+The ingestion process may take some time because embeddings are generated locally for the catalogue.
+
+Catalogue records and embeddings are stored in PostgreSQL and are **not included when cloning the Git repository**. Therefore, developers using separate local databases need to perform the ingestion once.
+
+Frontend-only developers connecting to an existing backend instance do not need to ingest the catalogue locally.
+
+### Normal Startup After Ingestion
+
+After the catalogue has been ingested, start the backend normally with:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Do not include `--ingest-all` during normal development unless the local catalogue needs to be ingested or refreshed.
+
+---
+
 ## Running the Application
 
 The application consists of a Spring Boot backend and a React/Vite frontend.
@@ -433,7 +475,7 @@ Demo profiles are stored in:
 src/main/resources/demo-users.json
 ```
 
-A demo profile may contain stated preferences, favourite books, liked authors, disliked subjects, reading history, and previously rejected books.
+A demo profile may contain stated preferences, favourite books, liked authors, disliked subjects, reading history, previously rejected books, and saved books / reading-list interests.
 
 Runtime Like and Not For Me feedback is stored separately and can further influence future recommendations.
 
