@@ -60,6 +60,15 @@ public class BookIngestionService {
 
         while (start < totalBooks) {
 
+            System.out.println(
+                    "Ingesting books "
+                            + (start + 1)
+                            + "-"
+                            + Math.min(start + batchSize, totalBooks)
+                            + " / "
+                            + totalBooks
+            );
+
             int rows = Math.min(batchSize, totalBooks - start);
 
             List<SolrBookDocument> documents =
@@ -73,9 +82,12 @@ public class BookIngestionService {
 
                 Book book = mapperService.toBook(document);
 
+                boolean alreadyHasEmbedding =
+                        bookRepository.hasEmbedding(book.getRecordId());
+
                 bookRepository.save(book);
 
-                if (book.isHasUsableDescription()) {
+                if (book.isHasUsableDescription() && !alreadyHasEmbedding) {
 
                     String text =
                             book.getTitle() + ". " + book.getDescription();
@@ -93,4 +105,14 @@ public class BookIngestionService {
             start += documents.size();
         }
     }
+
+    public void ingestAllBooks(int batchSize) {
+
+        int totalBooks = solrClientService.fetchTotalBookCount();
+
+        System.out.println("Total books found in Solr: " + totalBooks);
+
+        ingestBooksInBatches(totalBooks, batchSize);
+    }
+
 }

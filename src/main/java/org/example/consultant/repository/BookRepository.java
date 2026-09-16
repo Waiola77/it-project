@@ -58,4 +58,14 @@ public interface BookRepository extends JpaRepository<Book, String> {
             @Param("author") String author
     );
 
+    @Query(value = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM books
+            WHERE record_id = :recordId
+              AND embedding IS NOT NULL
+        )
+        """, nativeQuery = true)
+    boolean hasEmbedding(@Param("recordId") String recordId);
+
 }
