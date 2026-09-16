@@ -69,9 +69,8 @@ public class BookChatService {
                             : userMessage;
 
             similarBooks =
-                    retrievalService.findSimilarBooksByTextAndSource(
+                    retrievalService.findSimilarBooksByText(
                             queryText,
-                            "VA",
                             CANDIDATE_LIMIT
                     );
         }

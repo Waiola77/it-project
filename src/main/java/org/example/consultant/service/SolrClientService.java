@@ -11,6 +11,7 @@ import java.util.List;
 @Service
 public class SolrClientService {
 
+    private static final String SOLR_CORE = "combinedbooks";
     private final RestClient restClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -31,7 +32,7 @@ public class SolrClientService {
 
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/solr/VA/select")
+                        .path("/solr/" + SOLR_CORE + "/select")
                         .queryParam("q", "*:*")
                         .queryParam("rows", rows)
                         .queryParam("wt", "json")
@@ -44,7 +45,7 @@ public class SolrClientService {
 
         String json = restClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/solr/VA/select")
+                        .path("/solr/" + SOLR_CORE + "/select")
                         .queryParam("q", "*:*")
                         .queryParam("start", start)
                         .queryParam("rows", rows)
@@ -80,7 +81,7 @@ public class SolrClientService {
 
         String json = restClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/solr/VA/select")
+                        .path("/solr/" + SOLR_CORE + "/select")
                         .queryParam("q", "*:*")
                         .queryParam("rows", 0)
                         .queryParam("wt", "json")
