@@ -22,19 +22,22 @@ public class BookChatService {
     private final BookNormalizationService normalizationService;
     private final UserFeedbackService feedbackService;
     private final UserPreferenceService preferenceService;
+    private final DemoUserProfileService demoUserProfileService;
 
     public BookChatService(BookRetrievalService retrievalService,
                            BookRecommendationServices aiService,
                            IntentExtractionService intentExtractionService,
                            BookNormalizationService normalizationService,
                            UserFeedbackService feedbackService,
-                           UserPreferenceService preferenceService) {
+                           UserPreferenceService preferenceService,
+                           DemoUserProfileService demoUserProfileService) {
         this.retrievalService = retrievalService;
         this.aiService = aiService;
         this.intentExtractionService = intentExtractionService;
         this.normalizationService = normalizationService;
         this.feedbackService = feedbackService;
         this.preferenceService = preferenceService;
+        this.demoUserProfileService = demoUserProfileService;
     }
 
     public RecommendationResponse chat(String userId, String userMessage) {
@@ -73,16 +76,32 @@ public class BookChatService {
                     );
         }
 
-        List<String> rejectedBookIds =
+        List<String> excludedBookIds = new java.util.ArrayList<>();
+
+        // Exclude books rejected through live user feedback
+        excludedBookIds.addAll(
                 feedbackService.getRejectedBooks(userId)
                         .stream()
                         .map(feedback -> feedback.getBookId())
-                        .toList();
+                        .toList()
+        );
+
+        // For demo users, also exclude books already read or previously rejected
+        demoUserProfileService.getProfileById(userId).ifPresent(profile -> {
+
+            if (profile.getReadingHistoryRecordIds() != null) {
+                excludedBookIds.addAll(profile.getReadingHistoryRecordIds());
+            }
+
+            if (profile.getRejectedRecordIds() != null) {
+                excludedBookIds.addAll(profile.getRejectedRecordIds());
+            }
+        });
 
         List<Book> filteredBooks =
                 similarBooks.stream()
                         .filter(book ->
-                                !rejectedBookIds.contains(book.getRecordId()))
+                                !excludedBookIds.contains(book.getRecordId()))
                         .toList();
 
         String context = filteredBooks.stream()

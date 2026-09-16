@@ -4,6 +4,7 @@ import org.example.consultant.model.Book;
 import org.example.consultant.model.UserFeedback;
 import org.example.consultant.repository.BookRepository;
 import org.springframework.stereotype.Service;
+import org.example.consultant.model.DemoUserProfile;
 
 import java.util.List;
 
@@ -12,13 +13,16 @@ public class UserPreferenceService {
 
     private final UserFeedbackService feedbackService;
     private final BookRepository bookRepository;
+    private final DemoUserProfileService demoUserProfileService;
 
     public UserPreferenceService(
             UserFeedbackService feedbackService,
-            BookRepository bookRepository) {
+            BookRepository bookRepository,
+            DemoUserProfileService demoUserProfileService) {
 
         this.feedbackService = feedbackService;
         this.bookRepository = bookRepository;
+        this.demoUserProfileService = demoUserProfileService;
     }
 
     public List<Book> getLikedBooks(String userId) {
@@ -51,6 +55,54 @@ public class UserPreferenceService {
         List<Book> rejectedBooks = getRejectedBooks(userId);
 
         StringBuilder context = new StringBuilder();
+
+        demoUserProfileService.getProfileById(userId).ifPresent(profile -> {
+            context.append("Demo user profile:\n");
+
+            if (profile.getStatedPreferences() != null
+                    && !profile.getStatedPreferences().isBlank()) {
+                context.append("Stated preferences: ")
+                        .append(profile.getStatedPreferences())
+                        .append("\n");
+            }
+
+            if (profile.getFavoriteBookTitles() != null
+                    && !profile.getFavoriteBookTitles().isEmpty()) {
+                context.append("Favorite books: ")
+                        .append(String.join(", ", profile.getFavoriteBookTitles()))
+                        .append("\n");
+            }
+
+            if (profile.getLikedAuthors() != null
+                    && !profile.getLikedAuthors().isEmpty()) {
+                context.append("Liked authors: ")
+                        .append(String.join(", ", profile.getLikedAuthors()))
+                        .append("\n");
+            }
+
+            if (profile.getDislikedSubjects() != null
+                    && !profile.getDislikedSubjects().isEmpty()) {
+                context.append("Disliked subjects: ")
+                        .append(String.join(", ", profile.getDislikedSubjects()))
+                        .append("\n");
+            }
+
+            if (profile.getReadingHistoryRecordIds() != null
+                    && !profile.getReadingHistoryRecordIds().isEmpty()) {
+                context.append("Previously read book record IDs: ")
+                        .append(String.join(", ", profile.getReadingHistoryRecordIds()))
+                        .append("\n");
+            }
+
+            if (profile.getRejectedRecordIds() != null
+                    && !profile.getRejectedRecordIds().isEmpty()) {
+                context.append("Previously rejected book record IDs: ")
+                        .append(String.join(", ", profile.getRejectedRecordIds()))
+                        .append("\n");
+            }
+
+            context.append("\n");
+        });
 
         if (!likedBooks.isEmpty()) {
             context.append("Books the user liked:\n");
