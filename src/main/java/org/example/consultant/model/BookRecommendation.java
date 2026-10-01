@@ -48,4 +48,5 @@ public class BookRecommendation {
     public void setRank(int rank) {
         this.rank = rank;
     }
+
 }

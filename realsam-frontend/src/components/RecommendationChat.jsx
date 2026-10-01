@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./RecommendationChat.css";
 
 const preferenceSuggestions = [
@@ -8,6 +9,27 @@ const preferenceSuggestions = [
   "Adventure",
   "Romance",
   "Classics",
+];
+
+const demoRecommendations = [
+  {
+    recordId: "demo-001",
+    title: "The Clockmaker's Secret",
+    reason: "A cosy mystery with gentle pacing and an intriguing puzzle at its heart.",
+    rank: 1,
+  },
+  {
+    recordId: "demo-002",
+    title: "The Small Museum of Lost Things",
+    reason: "A warm, character-led story with a touch of humour and discovery.",
+    rank: 2,
+  },
+  {
+    recordId: "demo-003",
+    title: "Lanterns at Low Tide",
+    reason: "An atmospheric read about community, hope and finding your way forward.",
+    rank: 3,
+  },
 ];
 
 function AssistantMessage({ children }) {
@@ -24,27 +46,54 @@ function AssistantMessage({ children }) {
   );
 }
 
-function RecommendationChat() {
+function RecommendationChat({ selectedUser }) {
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
-  const [recommendations, setRecommendations] = useState([]);
+  const [selectedPreferences, setSelectedPreferences] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSend = async () => {
-    if (!message.trim()) {
+  function togglePreference(preference) {
+    setSelectedPreferences((current) =>
+      current.includes(preference)
+        ? current.filter((item) => item !== preference)
+        : [...current, preference],
+    );
+  }
+
+  const handleSend = async (event) => {
+    event.preventDefault();
+    const request = [message.trim(), ...selectedPreferences].filter(Boolean).join(", ");
+    if (!request || isLoading) {
       return;
     }
 
+    setError("");
+    setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/chat?userId=demo-user&message=${encodeURIComponent(message)}`
+        `http://localhost:8080/chat?userId=${encodeURIComponent(selectedUser.id)}&message=${encodeURIComponent(request)}`
       );
+      if (!response.ok) throw new Error("The recommendation service could not complete your request.");
 
       const data = await response.json();
+      if (!Array.isArray(data.recommendations)) {
+        throw new Error("The recommendation service returned an unexpected response.");
+      }
 
-      console.log("Backend response:", data);
-
-      setRecommendations(data.recommendations || []);
+      navigate("/recommendations", {
+        state: { request, recommendations: data.recommendations, userId: selectedUser.id, isDemo: false },
+      });
     } catch (error) {
-      console.error("Failed to fetch recommendations:", error);
+      if (error instanceof TypeError) {
+        navigate("/recommendations", {
+          state: { request, recommendations: demoRecommendations, userId: selectedUser.id, isDemo: true },
+        });
+      } else {
+        setError(error.message);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -70,8 +119,14 @@ function RecommendationChat() {
         aria-label="Suggested preferences"
       >
         {preferenceSuggestions.map((suggestion) => (
-          <button type="button" key={suggestion}>
-            + {suggestion}
+          <button
+            type="button"
+            key={suggestion}
+            className={selectedPreferences.includes(suggestion) ? "is-selected" : ""}
+            aria-pressed={selectedPreferences.includes(suggestion)}
+            onClick={() => togglePreference(suggestion)}
+          >
+            {selectedPreferences.includes(suggestion) ? "✓" : "+"} {suggestion}
           </button>
         ))}
       </div>
@@ -80,7 +135,7 @@ function RecommendationChat() {
         Choose any tags above, type a natural-language answer below, or use both.
       </p>
 
-      <div className="recommendation-chat__input-row">
+      <form className="recommendation-chat__input-row" onSubmit={handleSend}>
         <label className="visually-hidden" htmlFor="book-preferences">
           Describe the books you enjoy
         </label>
@@ -95,25 +150,13 @@ function RecommendationChat() {
 
         <button
           className="primary-button"
-          type="button"
-          onClick={handleSend}
+          type="submit"
+          disabled={isLoading || (!message.trim() && selectedPreferences.length === 0)}
         >
-          Send →
+          {isLoading ? "Finding books…" : "Find books →"}
         </button>
-      </div>
-
-      {recommendations.length > 0 && (
-        <div>
-          <h2>Recommendations</h2>
-
-          {recommendations.slice(0, 3).map((book) => (
-            <div key={book.recordId}>
-              <h3>{book.rank}. {book.title}</h3>
-              <p>{book.reason}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      </form>
+      {error && <p className="recommendation-chat__error" role="alert">{error}</p>}
     </section>
   );
 }

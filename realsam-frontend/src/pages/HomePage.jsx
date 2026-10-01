@@ -13,7 +13,7 @@ function HomePage({ users, selectedUser, onUserChange }) {
       />
       <main className="home-layout">
         <AccountSidebar user={selectedUser} />
-        <RecommendationChat />
+        <RecommendationChat selectedUser={selectedUser} />
       </main>
     </>
   );
