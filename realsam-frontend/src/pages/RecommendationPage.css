@@ -227,3 +227,150 @@
     padding: 24px;
   }
 }
+
+/* Book details button */
+.recommendation-book__details-button {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  color: var(--colour-navy);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.recommendation-book__details-button:hover,
+.recommendation-book__details-button:focus-visible {
+  color: var(--colour-pink);
+}
+
+
+/* Book details modal */
+.book-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+  background: rgb(19 20 72 / 45%);
+}
+
+.book-modal {
+  position: relative;
+
+  width: min(620px, 100%);
+  max-height: 80vh;
+  overflow-y: auto;
+
+  padding: 36px;
+
+  border: 2px solid var(--colour-border);
+  border-radius: 20px;
+
+  background: var(--colour-white);
+  box-shadow: 0 18px 50px rgb(19 20 72 / 22%);
+}
+
+.book-modal__close {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+
+  width: 40px;
+  height: 40px;
+
+  border: 2px solid var(--colour-border);
+  border-radius: 50%;
+
+  color: var(--colour-navy);
+  background: var(--colour-white);
+
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.book-modal__close:hover,
+.book-modal__close:focus-visible {
+  border-color: var(--colour-pink);
+  color: var(--colour-pink);
+}
+
+.book-modal h2 {
+  margin: 10px 50px 6px 0;
+
+  color: var(--colour-navy);
+  font-family: Georgia, serif;
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.book-modal__author {
+  margin: 0;
+  color: #697287;
+  font-size: 17px;
+}
+
+.book-modal__description {
+  margin-top: 26px;
+  padding-top: 20px;
+
+  border-top: 1px solid var(--colour-border);
+}
+
+.book-modal__description strong {
+  color: var(--colour-navy);
+}
+
+.book-modal__description p {
+  margin: 8px 0 0;
+
+  color: #515970;
+  line-height: 1.7;
+}
+
+.book-modal__record-id {
+  margin: 24px 0 0;
+
+  color: #697287;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .book-modal {
+    padding: 28px 22px;
+  }
+
+  .book-modal h2 {
+    font-size: 28px;
+  }
+}
+
+.recommendation-book__details-button {
+  margin-top: 14px;
+  padding: 8px 14px;
+
+  border: 1px solid var(--colour-border);
+  border-radius: 8px;
+
+  color: var(--colour-navy);
+  background: #f7f7fb;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.recommendation-book__details-button:hover {
+  border-color: var(--colour-pink);
+  background: #fff;
+}

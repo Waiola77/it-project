@@ -18,6 +18,7 @@ function RecommendationPage({ users, selectedUser, onUserChange }) {
   const [feedbackByBook, setFeedbackByBook] = useState({});
   const [feedbackNotice, setFeedbackNotice] = useState("");
   const [isReplacing, setIsReplacing] = useState(false);
+  const [selectedBookDetails, setSelectedBookDetails] = useState(null);
 
   async function handleFeedback(book, feedbackType) {
     const bookId = book.recordId;
@@ -126,7 +127,13 @@ function RecommendationPage({ users, selectedUser, onUserChange }) {
                     <strong>Why this book?</strong>
                     <p>{book.reason || "No recommendation reason provided."}</p>
                   </div>
-                  {book.recordId && <p className="recommendation-book__record-id">Catalogue ID: {book.recordId}</p>}
+                  <button
+                    className="recommendation-book__details-button"
+                    type="button"
+                    onClick={() => setSelectedBookDetails(book)}
+                  >
+                    View book details
+                  </button>
                   {book.recordId && (
                     <div className="recommendation-book__actions" aria-label={`Rate ${book.title}`}>
                       <button
@@ -175,6 +182,56 @@ function RecommendationPage({ users, selectedUser, onUserChange }) {
           </>
         )}
       </main>
+      {selectedBookDetails && (
+        <div
+          className="book-modal__overlay"
+          role="presentation"
+          onClick={() => setSelectedBookDetails(null)}
+        >
+          <div
+            className="book-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="book-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              className="book-modal__close"
+              type="button"
+              aria-label="Close book details"
+              onClick={() => setSelectedBookDetails(null)}
+            >
+              ×
+            </button>
+
+            <p className="section-label">Book details</p>
+
+            <h2 id="book-modal-title">
+              {selectedBookDetails.title || "Untitled book"}
+            </h2>
+
+            {selectedBookDetails.author && (
+              <p className="book-modal__author">
+                by {selectedBookDetails.author}
+              </p>
+            )}
+
+            <div className="book-modal__description">
+              <strong>About this book</strong>
+              <p>
+                {selectedBookDetails.description ||
+                  "No description is available for this book."}
+              </p>
+            </div>
+
+            {selectedBookDetails.recordId && (
+              <p className="book-modal__record-id">
+                Catalogue ID: {selectedBookDetails.recordId}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }
