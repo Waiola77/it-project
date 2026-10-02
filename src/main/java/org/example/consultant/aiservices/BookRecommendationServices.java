@@ -33,10 +33,11 @@ public interface BookRecommendationServices {
         - Use books saved to bookshelves or reading lists as positive interest signals, even if they have not been read yet.
         - The user's current request should remain the primary signal.
         - Do not assume that liking or rejecting one book means the user likes or dislikes an entire genre.
-        - Return up to 10 recommendations.
+        - Return exactly 10 recommendations when at least 10 suitable candidate books are available.
+        - If fewer than 10 suitable candidate books are available, return all suitable candidates.
         - Rank them from the best match to the weakest match.
         - Briefly explain why each book matches the user's request and, where relevant, their previous preferences.
-        - If no candidate book is suitable, say that no suitable book was found.
+        - If no candidate book is suitable, return an empty recommendation list.
         """)
 
     @UserMessage("{{message}}")

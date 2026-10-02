@@ -50,24 +50,34 @@ function RecommendationPage({ users, selectedUser, onUserChange }) {
       feedbackSaved = true;
 
       if (feedbackType === "rejected") {
+        const replacement =
+          nextRecommendationIndex < allRecommendations.length
+            ? allRecommendations[nextRecommendationIndex]
+            : null;
+
         setRecommendations((current) => {
-          // Remove the rejected book.
           const updated = current.filter(
             (recommendation) => recommendation.recordId !== bookId,
           );
 
-          // Add the next book from the ranked reserve list to the end.
-          if (nextRecommendationIndex < allRecommendations.length) {
-            updated.push(allRecommendations[nextRecommendationIndex]);
-            setNextRecommendationIndex((currentIndex) => currentIndex + 1);
+          if (replacement) {
+            updated.push(replacement);
           }
 
           return updated;
         });
 
-        setFeedbackNotice(
-          `${book.title} was removed and the next recommendation was added.`,
-        );
+        if (replacement) {
+          setNextRecommendationIndex((currentIndex) => currentIndex + 1);
+
+          setFeedbackNotice(
+            `${book.title} was removed and the next recommendation was added.`,
+          );
+        } else {
+          setFeedbackNotice(
+            `${book.title} was removed. No more recommendations are available.`,
+          );
+        }
       }
     } catch {
       if (feedbackType === "rejected" && !feedbackSaved) {
