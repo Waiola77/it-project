@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
+import RecommendationPage from "./pages/RecommendationPage";
 import { profileActivityByUser } from "./mocks/profileActivity";
 import { users } from "./mocks/users";
 import "./App.css";
@@ -34,6 +35,16 @@ function App() {
         path="/"
         element={
           <HomePage
+            users={users}
+            selectedUser={selectedUser}
+            onUserChange={setSelectedUser}
+          />
+        }
+      />
+      <Route
+        path="/recommendations"
+        element={
+          <RecommendationPage
             users={users}
             selectedUser={selectedUser}
             onUserChange={setSelectedUser}

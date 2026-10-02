@@ -39,3 +39,4 @@ build/
 
 ### Frontend dependencies ###
 realsam-frontend/node_modules/
+realsam-frontend/dist/

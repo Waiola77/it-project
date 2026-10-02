@@ -18,3 +18,8 @@
   outline: 4px solid var(--colour-pink);
   outline-offset: 4px;
 }
+
+.primary-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}

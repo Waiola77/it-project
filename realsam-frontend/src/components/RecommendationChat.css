@@ -69,6 +69,12 @@
   border-color: var(--colour-pink);
 }
 
+.preference-suggestions button.is-selected {
+  border-color: var(--colour-navy);
+  color: var(--colour-white);
+  background: var(--colour-navy);
+}
+
 .recommendation-chat__hint {
   color: #61677d;
 }
@@ -96,6 +102,12 @@
 .preference-suggestions button:focus-visible {
   outline: 4px solid var(--colour-pink);
   outline-offset: 3px;
+}
+
+.recommendation-chat__error {
+  margin-top: 16px;
+  color: #a0254c;
+  font-weight: 700;
 }
 
 .visually-hidden {

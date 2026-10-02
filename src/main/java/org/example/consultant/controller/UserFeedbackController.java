@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.example.consultant.model.Book;
 import org.example.consultant.service.UserPreferenceService;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserFeedbackController {
 
     private final UserFeedbackService feedbackService;

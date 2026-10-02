@@ -1,0 +1,229 @@
+.recommendation-page {
+  width: min(1080px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 42px 0 80px;
+}
+
+.recommendation-page__back,
+.recommendation-page__again {
+  display: inline-block;
+  color: var(--colour-navy);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.recommendation-page__back:hover,
+.recommendation-page__again:hover {
+  color: var(--colour-pink);
+  text-decoration: underline;
+}
+
+.recommendation-page__hero {
+  margin: 46px 0 34px;
+}
+
+.recommendation-page__hero h1 {
+  margin: 0 0 18px;
+  color: var(--colour-navy);
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.08;
+}
+
+.recommendation-page__hero > p:last-child {
+  max-width: 760px;
+  margin: 0;
+  color: #515970;
+  font-size: 19px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.recommendation-page__demo-note {
+  display: inline-block;
+  margin: 0 0 18px;
+  padding: 9px 14px;
+  border-radius: 8px;
+  color: #6f2852;
+  background: #fde9f3;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.recommendation-page__list {
+  display: grid;
+  gap: 20px;
+}
+
+.recommendation-book {
+  display: grid;
+  grid-template-columns: 108px minmax(0, 1fr);
+  overflow: hidden;
+  border: 2px solid var(--colour-border);
+  border-radius: 20px;
+  background: var(--colour-white);
+  box-shadow: 0 10px 28px rgb(19 20 72 / 7%);
+}
+
+.recommendation-book__number {
+  display: grid;
+  place-items: center;
+  color: var(--colour-white);
+  background: var(--colour-navy);
+  font-family: Georgia, serif;
+  font-size: 40px;
+}
+
+.recommendation-book__content {
+  min-width: 0;
+  padding: 28px 34px;
+}
+
+.recommendation-book__eyebrow {
+  margin: 0 0 8px;
+  color: #875179;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.recommendation-book h2 {
+  margin: 0;
+  color: var(--colour-navy);
+  font-family: Georgia, serif;
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.2;
+}
+
+
+.recommendation-book__reason {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--colour-border);
+}
+
+.recommendation-book__reason strong {
+  color: var(--colour-navy);
+}
+
+.recommendation-book__reason p {
+  margin: 8px 0 0;
+  color: #515970;
+  line-height: 1.6;
+}
+
+.recommendation-book__record-id {
+  margin: 18px 0 0;
+  color: #697287;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.recommendation-book__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.feedback-button {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 2px solid var(--colour-border);
+  border-radius: 999px;
+  color: var(--colour-navy);
+  background: var(--colour-white);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.feedback-button span {
+  margin-right: 5px;
+  font-size: 18px;
+}
+
+.feedback-button:hover,
+.feedback-button:focus-visible {
+  border-color: var(--colour-pink);
+}
+
+.feedback-button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.feedback-button:focus-visible {
+  outline: 3px solid rgb(231 87 157 / 30%);
+  outline-offset: 3px;
+}
+
+.feedback-button--like.is-selected {
+  border-color: #206647;
+  color: var(--colour-white);
+  background: #206647;
+}
+
+.feedback-button--reject.is-selected {
+  border-color: #9b3151;
+  color: var(--colour-white);
+  background: #9b3151;
+}
+
+.recommendation-page__feedback-notice {
+  min-height: 24px;
+  margin: 24px 0 0;
+  color: #515970;
+  font-weight: 700;
+}
+
+.recommendation-page__again {
+  margin-top: 12px;
+}
+
+.recommendation-page__empty {
+  padding: 40px;
+  border: 2px solid var(--colour-border);
+  border-radius: 20px;
+  background: var(--colour-white);
+}
+
+.recommendation-page__empty h2 {
+  margin: 0 0 10px;
+  color: var(--colour-navy);
+}
+
+.recommendation-page__empty p {
+  margin-bottom: 28px;
+  color: #515970;
+}
+
+.recommendation-page__empty .primary-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .recommendation-page {
+    width: min(100% - 28px, 720px);
+    padding-top: 28px;
+  }
+
+  .recommendation-page__hero {
+    margin-top: 36px;
+  }
+
+  .recommendation-book {
+    grid-template-columns: 1fr;
+  }
+
+  .recommendation-book__number {
+    justify-content: start;
+    padding: 12px 22px;
+    font-size: 24px;
+  }
+
+  .recommendation-book__content {
+    padding: 24px;
+  }
+}
