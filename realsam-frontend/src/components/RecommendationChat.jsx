@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./RecommendationChat.css";
+import { API_BASE } from '../config';
 
 const preferenceSuggestions = [
   "Gentle stories",
@@ -72,7 +73,7 @@ function RecommendationChat({ selectedUser }) {
     setIsLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/chat?userId=${encodeURIComponent(selectedUser.id)}&message=${encodeURIComponent(request)}`
+          `${API_BASE}/chat?userId=${encodeURIComponent(selectedUser.id)}&message=${encodeURIComponent(request)}`
       );
       if (!response.ok) throw new Error("The recommendation service could not complete your request.");
 

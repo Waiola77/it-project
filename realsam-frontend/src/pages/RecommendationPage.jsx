@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import "./RecommendationPage.css";
+import { API_BASE } from '../config';
 
 function RecommendationPage({ users, selectedUser, onUserChange }) {
   const { state } = useLocation();
@@ -40,7 +41,7 @@ function RecommendationPage({ users, selectedUser, onUserChange }) {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/feedback/${feedbackType === "liked" ? "like" : "reject"}?userId=${encodeURIComponent(selectedUser.id)}&bookId=${encodeURIComponent(bookId)}`,
+          `${API_BASE}/feedback/${feedbackType === "liked" ? "like" : "reject"}?userId=${encodeURIComponent(selectedUser.id)}&bookId=${encodeURIComponent(bookId)}`,
         { method: "POST" },
       );
 
