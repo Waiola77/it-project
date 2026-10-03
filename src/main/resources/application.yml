@@ -5,11 +5,13 @@ langchain4j:
       api-key: ${DASHSCOPE_API_KEY}
       model-name: qwen-plus-0112
 
-spring:
+pring:
+  main:
+    lazy-initialization: true
   datasource:
     url: jdbc:postgresql://localhost:5432/bookagent
     username: ${DB_USERNAME}
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
