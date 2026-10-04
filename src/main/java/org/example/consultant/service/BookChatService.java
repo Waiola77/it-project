@@ -124,10 +124,45 @@ public class BookChatService {
                 preferenceContext
         );
 
-        for (BookRecommendation recommendation : response.getRecommendations()) {
+
+        List<BookRecommendation> finalRecommendations =
+                response.getRecommendations().stream()
+
+                        // Remove books that clearly conflict with the user's
+                        // explicit negative preferences
+                        .filter(recommendation ->
+                                !recommendation.isNegativeConflict()
+                        )
+
+                        // Only accept books that actually came from this retrieval
+                        .filter(recommendation ->
+                                filteredBooks.stream().anyMatch(book ->
+                                        book.getRecordId().equals(recommendation.getRecordId())
+                                )
+                        )
+
+                        // Strong matches first, then moderate, then weak
+                        .sorted(java.util.Comparator.comparingInt(recommendation ->
+                                switch (recommendation.getMatchStrength() == null
+                                        ? ""
+                                        : recommendation.getMatchStrength().toLowerCase()) {
+                                    case "strong" -> 0;
+                                    case "moderate" -> 1;
+                                    case "weak" -> 2;
+                                    default -> 3;
+                                }
+                        ))
+
+                        .limit(10)
+                        .collect(Collectors.toList());
+
+        for (int i = 0; i < finalRecommendations.size(); i++) {
+
+            BookRecommendation recommendation = finalRecommendations.get(i);
 
             Book matchedBook = filteredBooks.stream()
-                    .filter(book -> book.getRecordId().equals(recommendation.getRecordId()))
+                    .filter(book ->
+                            book.getRecordId().equals(recommendation.getRecordId()))
                     .findFirst()
                     .orElse(null);
 
@@ -139,7 +174,11 @@ public class BookChatService {
                         matchedBook.getDescription()
                 );
             }
+
+            recommendation.setRank(i + 1);
         }
+
+        response.setRecommendations(finalRecommendations);
 
         return response;
     }
