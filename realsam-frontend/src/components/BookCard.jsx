@@ -1,6 +1,6 @@
 import "./BookCard.css";
 
-function BookCard({ book, progress, saveType = "liked", isSaved, onSaveToggle }) {
+function BookCard({ book, saveType = "liked", isSaved, onSaveToggle }) {
   const isRejected = saveType === "rejected";
   const activeIcon = isRejected ? "×" : "★";
   const inactiveIcon = isRejected ? "↶" : "☆";
@@ -43,18 +43,6 @@ function BookCard({ book, progress, saveType = "liked", isSaved, onSaveToggle })
       <div className="book-card__details">
         <h3>{book.title}</h3>
         <p>{book.author}</p>
-
-        {progress !== undefined && (
-          <div className="book-card__progress">
-            <div className="book-card__progress-label">
-              <span>Reading progress</span>
-              <strong>{progress}%</strong>
-            </div>
-            <progress value={progress} max="100">
-              {progress}%
-            </progress>
-          </div>
-        )}
       </div>
     </article>
   );
