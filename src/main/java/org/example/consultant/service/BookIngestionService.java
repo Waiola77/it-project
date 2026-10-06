@@ -93,4 +93,21 @@ public class BookIngestionService {
             start += documents.size();
         }
     }
+
+    public int reembedMissing(int batchSize) {
+        int total = 0;
+        while (true) {
+            List<Book> books = bookRepository.findBooksMissingEmbedding(batchSize);
+            if (books.isEmpty()) break;
+
+            for (Book book : books) {
+                String text = book.getTitle() + ". " + book.getDescription();
+                String embedding = embeddingService.embedAsVectorString(text);
+                bookRepository.updateEmbedding(book.getRecordId(), embedding);
+                total++;
+            }
+        }
+        return total;
+    }
+
 }
