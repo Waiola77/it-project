@@ -2,7 +2,8 @@ package org.example.consultant.service;
 
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.model.embedding.EmbeddingModel;
-import dev.langchain4j.model.embedding.onnx.allminilml6v2.AllMiniLmL6V2EmbeddingModel;
+import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,8 +11,13 @@ public class EmbeddingService {
 
     private final EmbeddingModel embeddingModel;
 
-    public EmbeddingService() {
-        this.embeddingModel = new AllMiniLmL6V2EmbeddingModel();
+    public EmbeddingService(@Value("${DASHSCOPE_API_KEY}") String apiKey) {
+        this.embeddingModel = OpenAiEmbeddingModel.builder()
+                .baseUrl("https://dashscope.aliyuncs.com/compatible-mode/v1")
+                .apiKey(apiKey)
+                .modelName("text-embedding-v4")
+                .dimensions(512)
+                .build();
     }
 
     public float[] embed(String text) {
