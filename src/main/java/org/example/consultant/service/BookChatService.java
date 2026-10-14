@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Service
 public class BookChatService {
 
-    private static final int CANDIDATE_LIMIT = 20;
+    private static final int CANDIDATE_LIMIT = 10;
 
     private final BookRetrievalService retrievalService;
     private final BookRecommendationServices aiService;
@@ -108,7 +108,10 @@ public class BookChatService {
                         b.getRecordId(),
                         b.getTitle(),
                         String.join(", ", b.getAuthorsRaw()),
-                        b.getDescription()))
+                        b.getDescription() == null ? "" :
+                                (b.getDescription().length() > 250
+                                        ? b.getDescription().substring(0, 250) + "..."
+                                        : b.getDescription())))
                 .collect(Collectors.joining("\n"));
 
         if (context.isBlank()) {
