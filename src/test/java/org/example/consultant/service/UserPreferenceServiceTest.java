@@ -6,7 +6,10 @@ import org.example.consultant.model.UserFeedback;
 import org.example.consultant.repository.BookRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -26,54 +30,65 @@ class UserPreferenceServiceTest {
     @Mock
     private BookRepository bookRepository;
 
-    @Mock
-    private DemoUserProfileService demoUserProfileService;
+    @Spy
+    private DemoUserProfileService demoUserProfileService = new DemoUserProfileService();
 
     @InjectMocks
     private UserPreferenceService preferenceService;
 
-    @Test
-    void shouldBuildPreferenceContextFromDemoProfileAndFeedback() {
-        String userId = "science-reader";
-        DemoUserProfile profile = new DemoUserProfile();
-        profile.setStatedPreferences("I like space and technology.");
-        profile.setFavoriteBookTitles(List.of("The Little Book of Exoplanets"));
-        profile.setLikedAuthors(List.of("Lucy Hawking"));
-        profile.setDislikedSubjects(List.of("romance"));
-        profile.setReadingHistoryRecordIds(List.of("read-1"));
-        profile.setRejectedRecordIds(List.of("profile-rejected-1"));
-        profile.setSavedBookRecordIds(List.of("saved-1"));
-        Book savedBook = book("saved-1", "Saved Space Book", "A saved science book.");
-        Book likedBook = book("liked-1", "Liked Science Book", "A liked science book.");
-        Book rejectedBook = book("rejected-1", "Rejected Romance Book", "A rejected romance book.");
-
-        when(demoUserProfileService.getProfileById(userId)).thenReturn(Optional.of(profile));
+    @ParameterizedTest(name = "Preference context for {0}")
+    @ValueSource(strings = {"romance-reader", "science-reader", "self-improvement-reader",
+            "mystery-reader", "history-adventure-reader", "new-gentle-fiction-reader"})
+    void shouldBuildPreferenceContextFromActualDemoProfileAndFeedback(String userId) {
+        // Load the production JSON through the real profile service.
+        DemoUserProfile profile = demoUserProfileService.getProfileById(userId).orElseThrow();
+        Book likedBook = book("live-liked", "Live Liked Book", "A liked book.");
+        Book rejectedBook = book("live-rejected", "Live Rejected Book", "A rejected book.");
         when(feedbackService.getFeedbackForUser(userId)).thenReturn(List.of(
-                new UserFeedback(userId, "liked-1", "LIKED"),
-                new UserFeedback(userId, "rejected-1", "REJECTED")
+                new UserFeedback(userId, "live-liked", "LIKED"),
+                new UserFeedback(userId, "live-rejected", "REJECTED")
         ));
-        when(bookRepository.findById("saved-1")).thenReturn(Optional.of(savedBook));
-        when(bookRepository.findById("liked-1")).thenReturn(Optional.of(likedBook));
-        when(bookRepository.findById("rejected-1")).thenReturn(Optional.of(rejectedBook));
+        when(bookRepository.findById("live-liked")).thenReturn(Optional.of(likedBook));
+        when(bookRepository.findById("live-rejected")).thenReturn(Optional.of(rejectedBook));
+        // The JSON supplies real IDs, not catalogue metadata. Only catalogue lookups are mocked.
+        for (String savedId : profile.getSavedBookRecordIds()) {
+            when(bookRepository.findById(savedId)).thenReturn(Optional.of(
+                    book(savedId, "Catalogue fixture " + savedId, "Saved book description")));
+        }
 
         String context = preferenceService.buildPreferenceContext(userId);
 
-        assertTrue(context.contains("I like space and technology."));
-        assertTrue(context.contains("Favorite books: The Little Book of Exoplanets"));
-        assertTrue(context.contains("Liked authors: Lucy Hawking"));
-        assertTrue(context.contains("Disliked subjects: romance"));
-        assertTrue(context.contains("Previously read book record IDs: read-1"));
-        assertTrue(context.contains("Previously rejected book record IDs: profile-rejected-1"));
-        assertTrue(context.contains("Saved Space Book"));
-        assertTrue(context.contains("Liked Science Book"));
-        assertTrue(context.contains("Rejected Romance Book"));
+        assertTrue(context.contains("Stated preferences: " + profile.getStatedPreferences()));
+        assertTrue(context.contains("Disliked subjects: " + String.join(", ", profile.getDislikedSubjects())));
+        if (!profile.getFavoriteBookTitles().isEmpty()) {
+            assertTrue(context.contains("Favorite books: " + String.join(", ", profile.getFavoriteBookTitles())));
+        }
+        if (!profile.getReadingHistoryRecordIds().isEmpty()) {
+            assertTrue(context.contains("Previously read book record IDs: "
+                    + String.join(", ", profile.getReadingHistoryRecordIds())));
+        } else {
+            assertFalse(context.contains("Previously read book record IDs:"));
+        }
+        if (!profile.getRejectedRecordIds().isEmpty()) {
+            assertTrue(context.contains("Previously rejected book record IDs: "
+                    + String.join(", ", profile.getRejectedRecordIds())));
+        }
+        for (String savedId : profile.getSavedBookRecordIds()) {
+            assertTrue(context.contains("Catalogue fixture " + savedId));
+        }
+        assertTrue(context.contains("Live Liked Book"));
+        assertTrue(context.contains("Live Rejected Book"));
+        // No other demo user's stated preferences should leak into this context.
+        demoUserProfileService.getAllProfiles().stream()
+                .filter(other -> !other.getId().equals(userId))
+                .forEach(other -> assertFalse(
+                        context.contains(other.getStatedPreferences())));
     }
 
     @Test
     void shouldReturnDefaultMessageWhenUserHasNoPreferenceHistory() {
         String userId = "new-user";
 
-        when(demoUserProfileService.getProfileById(userId)).thenReturn(Optional.empty());
         when(feedbackService.getFeedbackForUser(userId)).thenReturn(List.of());
 
         String context = preferenceService.buildPreferenceContext(userId);

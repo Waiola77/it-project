@@ -1,4 +1,4 @@
-name: CI
+name: NextChapter Quality Checks
 
 on:
   pull_request:
@@ -6,11 +6,12 @@ on:
     branches:
       - main
       - integration/frontend-latest
+      - integration/production
       - test/**
 
 jobs:
   backend:
-    name: Backend compile and unit tests
+    name: Backend — Core Logic and Demo Profiles
     runs-on: ubuntu-latest
 
     steps:
@@ -24,14 +25,23 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Compile backend
+      - name: Compile Java backend
         run: ./mvnw -q -DskipTests compile
 
-      - name: Run stable backend unit tests
-        run: ./mvnw -q -Dtest=BookChatServiceTest,UserPreferenceServiceTest test
+      - name: Test recommendation retrieval, filtering and ranking
+        run: ./mvnw -q -Dtest=BookChatServiceTest test
+
+      - name: Test real demo profiles and feedback context
+        run: ./mvnw -q -Dtest=UserPreferenceServiceTest test
+
+      - name: Test catalogue metadata normalization
+        run: ./mvnw -q -Dtest=BookNormalizationServiceTest test
+
+      - name: Test Solr document mapping
+        run: ./mvnw -q -Dtest=SolrBookMapperServiceTest test
 
   frontend:
-    name: Frontend lint and build
+    name: Frontend — Lint and Production Build
     runs-on: ubuntu-latest
 
     defaults:
@@ -52,8 +62,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Lint frontend
+      - name: Check frontend code with ESLint
         run: npm run lint
 
-      - name: Build frontend
+      - name: Build frontend for production
         run: npm run build
