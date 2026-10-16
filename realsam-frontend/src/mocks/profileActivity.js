@@ -41,39 +41,26 @@ export const profileActivityByUser = {
   "user-001": {
     liked: ["book-002", "book-003", "book-005"],
     rejected: ["book-004"],
-    read: [
-      { bookId: "book-001", progress: 100 },
-      { bookId: "book-002", progress: 68 },
-      { bookId: "book-003", progress: 31 },
-    ],
+    read: ["book-001", "book-002", "book-003"],
   },
   "user-002": {
     liked: ["book-004", "book-006"],
     rejected: ["book-003"],
-    read: [
-      { bookId: "book-004", progress: 100 },
-      { bookId: "book-006", progress: 74 },
-    ],
+    read: ["book-004", "book-006"],
   },
   "user-003": {
     liked: ["book-001", "book-005"],
     rejected: ["book-002"],
-    read: [
-      { bookId: "book-005", progress: 100 },
-      { bookId: "book-001", progress: 46 },
-    ],
+    read: ["book-005", "book-001"],
   },
   "user-004": {
     liked: ["book-006"],
     rejected: [],
-    read: [{ bookId: "book-006", progress: 83 }],
+    read: ["book-006"],
   },
   "user-005": {
     liked: ["book-003", "book-004"],
     rejected: ["book-006"],
-    read: [
-      { bookId: "book-003", progress: 100 },
-      { bookId: "book-004", progress: 46 },
-    ],
+    read: ["book-003", "book-004"],
   },
 };

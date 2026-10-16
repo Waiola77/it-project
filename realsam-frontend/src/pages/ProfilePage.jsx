@@ -13,13 +13,6 @@ const tabs = [
 const emptyActivity = { liked: [], rejected: [], read: [] };
 
 function getBooksForTab(activity, activeTab) {
-  if (activeTab === "read") {
-    return activity.read.map(({ bookId, progress }) => ({
-      ...books[bookId],
-      progress,
-    }));
-  }
-
   return activity[activeTab].map((bookId) => books[bookId]);
 }
 
@@ -89,7 +82,6 @@ function ProfilePage({ selectedUser, activity = emptyActivity, onSavedBookChange
               {visibleBooks.map((book) => (
                 <BookCard
                   book={book}
-                  progress={book.progress}
                   saveType={activeTab === "rejected" ? "rejected" : "liked"}
                   isSaved={
                     activeTab === "read" || activity[activeTab].includes(book.id)
