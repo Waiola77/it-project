@@ -286,7 +286,7 @@ npm run build
 
 GitHub Actions (`.github/workflows/ci.yml`) compiles the backend and runs selected Java test classes (recommendation, demo profiles, normalization, Solr mapping), then runs frontend lint and build on Node 22. **CI does not run the entire backend integration test suite.**
 
-**Known local test outcome (reported 25 October 2026):** A local `./mvnw test` run reported 40 tests: 37 passed, 1 failed, 1 errored and 1 skipped. `RealBookRetrievalTest` expected results from `VA`, but the local `books` table contained 1,001 `rnib` records and no `VA` records. This explains the empty-result assertion under the repository's source-filtered query. `BookEmbeddingRepositoryTest` raised `NoSuchElementException`; its exact precondition/failure cause still requires verification. These are environment-dependent integration tests; do not claim the full suite passes on every installation. Keep a clean test database and document its required fixtures.
+**Known local test outcome (reported 25 October 2026):** A local `./mvnw test` run reported 40 tests: 37 passed, 1 failed, 1 errored and 1 skipped. `RealBookRetrievalTest` expected results from `VA`, but the local `books` table contained 1,001 `rnib` records and no `VA` records. This explains the empty-result assertion under the repository's source-filtered query. `BookEmbeddingRepositoryTest` requires pre-existing book records with IDs vec-001, vec-002, and vec-003. The test fails with `NoSuchElementException` if a required record is missing. These are environment-dependent integration tests; do not claim the full suite passes on every installation. Keep a clean test database and document its required fixtures.
 
 ## Build and deployment
 
