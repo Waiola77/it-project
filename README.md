@@ -1,596 +1,347 @@
-# NextChapter – AI-Powered Book Recommendation System
+# NextChapter — RealSAM Book Recommendation Prototype
 
-NextChapter is a personalised book recommendation prototype developed for the RealSAM project.
+NextChapter is a proof-of-concept book recommendation application developed for the RealSAM project. A React frontend sends natural-language requests to a Spring Boot backend, which retrieves catalogue-grounded books, incorporates demo user profiles and stored feedback, and returns ranked recommendations with short reasons.
 
-The system recommends books from the RealSAM catalogue based on a user's natural-language request, existing preferences, reading history, and feedback. It combines LLM-based intent understanding, catalogue retrieval, user preference modelling, and recommendation ranking to provide personalised recommendations with explanations.
+## Contents
 
----
+1. [Scope and features](#scope-and-features)
+2. [Architecture and recommendation flow](#architecture-and-recommendation-flow)
+3. [Technology and versions](#technology-and-versions)
+4. [Repository layout](#repository-layout)
+5. [Prerequisites](#prerequisites)
+6. [Configuration](#configuration)
+7. [Database and catalogue ingestion](#database-and-catalogue-ingestion)
+8. [Build and run locally](#build-and-run-locally)
+9. [API reference](#api-reference)
+10. [Testing and CI](#testing-and-ci)
+11. [Build and deployment](#build-and-deployment)
+12. [Data and model information](#data-and-model-information)
+13. [Known limitations](#known-limitations)
+14. [Additional documentation](#additional-documentation)
 
-## Table of Contents
+## Scope and features
 
-- [Project Overview](#project-overview)
-- [Project Motivation](#project-motivation)
-- [Key Features](#key-features)
-- [System Architecture](#system-architecture)
-- [Recommendation Pipeline](#recommendation-pipeline)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Catalogue Ingestion](#catalogue-ingestion)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Demo Users](#demo-users)
-- [Testing](#testing)
-- [Project Structure](#project-structure)
-- [Documentation](#documentation)
+- Natural-language book requests and LLM-assisted search-intent extraction.
+- Exact title/author retrieval when the intent specifies one, or embedding-based semantic retrieval for general requests.
+- Catalogue-grounded recommendations using imported RealSAM Solr book metadata.
+- Demo user preferences, reading-history exclusion, rejection exclusion, and stored Like/Not For Me feedback.
+- LLM evaluation of candidate match strength and explicit negative-preference conflicts; results are ranked and annotated with recommendation reasons.
+- React demonstration interface, initially showing three recommendations, with additional returned recommendations held in reserve.
 
----
+This is a **prototype**, not a complete production RealSAM account or audio system. It does not implement speech recognition, text-to-speech, production authentication or a general-purpose catalogue search interface.
 
-## Project Overview
-
-NextChapter is a proof-of-concept personalised book recommendation system designed to support users in discovering books from the RealSAM catalogue.
-
-Users can describe what they would like to read using natural language. The backend interprets the request, retrieves relevant books from the catalogue, incorporates existing user preferences and feedback, and returns a ranked list of recommendations.
-
-Each recommendation contains information that can be presented directly by the frontend, including:
-
-- Book title
-- Author
-- Description
-- Recommendation rank
-- Personalised recommendation reason
-
-The current prototype focuses primarily on the recommendation engine and backend integration.
-
----
-
-## Project Motivation
-
-Traditional catalogue search often requires users to know specific titles, authors, subjects, or search terms.
-
-NextChapter explores a more conversational recommendation approach where users can express preferences naturally, for example:
-
-> "I want an interesting science book about space."
-
-The system combines this request with available information about the user, such as previous reading activity and feedback, to provide more personalised recommendations.
-
----
-
-## Key Features
-
-### Natural-Language Preference Parsing
-
-User requests are interpreted using an LLM to identify relevant recommendation intent and preferences.
-
-### Catalogue-Based Recommendations
-
-Recommendations are restricted to books available in the RealSAM catalogue.
-
-### Semantic Book Retrieval
-
-Book embeddings are used with PostgreSQL and pgvector to retrieve catalogue books that are semantically related to a user's request.
-
-### Exact Title and Author Retrieval
-
-The recommendation pipeline also supports requests that explicitly refer to a book title or author.
-
-### Personalised Ranking
-
-Candidate books are ranked using the current user request together with available user preference information.
-
-### Recommendation Explanations
-
-Each recommended book includes a short explanation describing why it may be relevant to the user.
-
-### Demo User Profiles
-
-Demo profiles provide initial user information such as:
-
-- Stated interests
-- Favourite books
-- Liked authors
-- Disliked subjects
-- Reading history
-- Previously rejected books
-- Saved books / reading-list interests
-
-These profiles allow personalised recommendation behaviour to be demonstrated without requiring a production user account system.
-
-### User Feedback
-
-Users can provide feedback through:
-
-- **Like** – provides a positive preference signal for future recommendations.
-- **Not For Me** – records negative feedback and prevents the rejected book from being recommended again.
-
-### Reading History Filtering
-
-Books recorded in a demo user's reading history are excluded from new recommendations while the reading history can still contribute information about the user's preferences.
-
----
-
-## System Architecture
-
-The current system consists of a React/Vite frontend and a Spring Boot backend.
-
-A simplified architecture is shown below:
+## Architecture and recommendation flow
 
 ```text
-User
- │
- ▼
 React / Vite Frontend
- │
- │ HTTP Request
- ▼
+    |
+    | User request + user ID
+    v
 Spring Boot Backend
- │
- ├── LLM Intent Extraction
- │
- ├── User Preference Modelling
- │     ├── Demo User Profile
- │     └── User Feedback
- │
- ├── Book Retrieval
- │     ├── Exact Title / Author Retrieval
- │     └── Semantic Retrieval
- │
- ├── Candidate Filtering
- │     ├── Reading History
- │     └── Rejected Books
- │
- └── LLM Recommendation Ranking
-          │
-          ▼
- Ranked Recommendations
-          │
-          ▼
-       Frontend
+    |
+    |-- LLM extracts search intent
+    |
+    |-- Select retrieval strategy
+    |     |-- Exact title / author search
+    |     |-- Semantic search using DashScope embeddings
+    |         and PostgreSQL / pgvector
+    |
+    |-- Filter previously read or rejected books
+    |   using user profile and feedback history
+    |
+    |-- LLM evaluates candidate relevance,
+    |   negative preference conflicts,
+    |   and generates recommendation reasons
+    |
+    |-- Remove conflicting or invalid candidates
+    |
+    |-- Rank by match strength
+    |   (strong > moderate > weak)
+    |
+    |-- Return up to 10 recommendations
+    v
+React Frontend
+    |
+    |-- Display first 3 recommendations
+    |-- Keep remaining recommendations in reserve
+    |
+    |-- User selects Like or Not for me
+    |     |-- Send feedback to backend
+    |     |-- Store feedback in PostgreSQL
+    |     |-- On rejection, remove the book and
+    |         append the next reserve recommendation
 ```
 
----
+The semantic retrieval stage retrieves up to 20 candidate books.
+After filtering previously read or rejected books, the LLM evaluates
+the remaining candidates and ranks them by match strength
+(strong > moderate > weak). The backend returns up to 10 recommendations,
+depending on the number of valid candidates.
 
-## Recommendation Pipeline
+The frontend initially displays the first 3 recommendations and keeps
+the remaining results in reserve. When a user selects Not For Me,
+the rejected book is removed and the next reserve recommendation is
+displayed without rerunning the recommendation pipeline. Stored feedback
+influences subsequent recommendation requests.
 
-The main recommendation process is:
+## Technology and versions
 
-1. Receive the user's natural-language request and user ID.
-2. Parse the request to identify recommendation intent.
-3. Retrieve candidate books from the catalogue.
-4. Load available user preference information.
-5. Remove books that should not be recommended again.
-6. Rank the remaining candidates according to the current request and user preferences.
-7. Generate a short recommendation reason.
-8. Enrich the recommendation response with catalogue metadata.
-9. Return the ranked recommendations to the frontend.
+| Component | Version / implementation |
+| --- | --- |
+| Java | 17 (`pom.xml`; Docker images also use 17) |
+| Spring Boot | 4.1.1 |
+| Build | Maven wrapper (`./mvnw`) |
+| LangChain4j | 1.19.0-beta29 |
+| Database | PostgreSQL with pgvector; server version not pinned in repository |
+| LLM API | Alibaba Cloud DashScope OpenAI-compatible endpoint; configured chat model `deepseek-v4-flash-0731` |
+| Embeddings | DashScope `text-embedding-v4`, **512 dimensions** |
+| Catalogue | RealSAM Solr staging endpoint, `combinedbooks` core |
+| Frontend | React ^19.2.8, React Router ^7.18.3, Vite ^8.2.2 |
+| Frontend build / CI runtime | Node.js 22 in GitHub Actions |
 
-When at least 10 suitable candidate books are available, the backend returns 10 ranked recommendations. The frontend initially displays the top 3 recommendations.
+Dependency resolution is governed by `pom.xml` and `realsam-frontend/package-lock.json`. The package manifest uses semver ranges; use the lockfile for reproducible installs.
 
-The remaining recommendations act as reserve recommendations. When a user selects **Not For Me**, the rejected book is removed from the displayed recommendations and the next ranked recommendation is shown without rerunning the full recommendation pipeline.
+## Repository layout
 
-The rejected book is also recorded as user feedback and is excluded from future recommendation requests for that user.
-
-User feedback can then update the preference information used by future recommendation requests.
-
----
-
-## Technology Stack
-
-### Backend
-
-- Java
-- Spring Boot
-- Maven
-- LangChain4j
-
-### Data and Retrieval
-
-- PostgreSQL
-- pgvector
-- Solr
-- MiniLM embeddings
-
-The current embedding model produces 384-dimensional vectors.
-
-### Frontend
-
-- React
-- Vite
-
-### LLM Integration
-
-The backend uses an LLM through an OpenAI-compatible API interface for tasks including intent extraction and recommendation ranking.
-
----
-
-## Getting Started
-
-### Prerequisites
-
-Before running the project, install:
-
-- Java
-- PostgreSQL
-- pgvector
-- Node.js and npm
-- Git
-
-Clone the repository or update an existing local copy:
-
-```bash
-git pull origin main
+```text
+it-project/
+├── .github/workflows/ci.yml          # GitHub Actions checks
+├── Dockerfile                         # Backend multi-stage container build
+├── pom.xml                            # Java dependencies
+├── mvnw, mvnw.cmd, .mvn/              # Maven wrapper
+├── src/
+│   ├── main/java/org/example/consultant/
+│   │   ├── aiservices/                # LLM interfaces
+│   │   ├── config/                    # Model and CORS configuration
+│   │   ├── controller/                # HTTP endpoints
+│   │   ├── model/                     # Book, profile and response types
+│   │   ├── repository/                # JPA and pgvector queries
+│   │   └── service/                   # Retrieval, ingestion, feedback, ranking
+│   ├── main/resources/
+│   │   ├── application.yml            # Spring database defaults
+│   │   └── demo-users.json            # Demo profile fixtures
+│   └── test/java/                     # JUnit/Spring tests
+└── realsam-frontend/
+    ├── package.json, package-lock.json
+    ├── src/config.js                  # Frontend API URL
+    ├── src/pages/                     # Demo pages
+    └── wrangler.jsonc                 # Cloudflare Workers static assets config
 ```
 
----
+## Prerequisites
+
+- JDK 17, Git, Node.js 22 and npm.
+- PostgreSQL with the `vector` extension installed and enabled.
+- Network access and authorized credentials for the RealSAM staging Solr catalogue (required for ingestion).
+- A valid DashScope API key with access to the configured chat and embedding models (required for recommendation and ingestion embeddings).
+- A PostgreSQL user authorized to create/update tables in the selected development database.
+
+**Use a separate development/test database.** `spring.jpa.hibernate.ddl-auto=update` may change schema on application startup, and integration tests can read or write database records. Do not point local tests at production.
 
 ## Configuration
 
-### PostgreSQL
+Backend variables are read from the process environment. Create a private shell configuration or deployment secrets; do **not** commit actual credentials.
 
-Start PostgreSQL:
+| Variable | Required | Meaning |
+| --- | --- | --- |
+| `DB_URL` | Optional if using local default | JDBC URL; default `jdbc:postgresql://localhost:5432/bookagent` |
+| `DB_USERNAME` | Yes | PostgreSQL username |
+| `DB_PASSWORD` | Required if database uses a password | Password; defaults to empty string |
+| `DASHSCOPE_API_KEY` | Yes for model-backed operations | Chat and embedding API key |
+| `SOLR_USERNAME` | Yes for catalogue ingestion | RealSAM Solr basic-auth username |
+| `SOLR_PASSWORD` | Yes for catalogue ingestion | RealSAM Solr basic-auth password |
+| `VITE_API_URL` | Optional for frontend | Backend base URL; defaults to `http://localhost:8080` |
+| `PORT` | Optional for Docker runtime | Container HTTP port; defaults to `8080` |
+
+An example configuration file is provided in `.env.example`.
+
+Copy the example file and replace the placeholders with your own
+environment settings and credentials. Environment variables must
+be loaded into the application process before starting the backend,
+as Spring Boot does not automatically load `.env` files.
+
+Example shell setup (replace placeholders locally; do not paste secrets into issue reports):
 
 ```bash
-brew services start postgresql
+export DB_URL='jdbc:postgresql://localhost:5432/bookagent'
+export DB_USERNAME='YOUR_DB_USER'
+export DB_PASSWORD='YOUR_DB_PASSWORD'
+export DASHSCOPE_API_KEY='YOUR_DASHSCOPE_API_KEY'
+export SOLR_USERNAME='YOUR_SOLR_USER'
+export SOLR_PASSWORD='YOUR_SOLR_PASSWORD'
 ```
 
-Create the project database if it does not already exist:
+For frontend configuration, set `VITE_API_URL` **before** `npm run build` when targeting a deployed backend. Vite embeds `VITE_*` values in the browser bundle; **never** put secrets in them.
 
-```bash
-createdb bookagent
-```
+The current Solr host/core and model names are hardcoded in Java (`SolrClientService`, `ChatModelConfig`, `EmbeddingService`). Changing providers or environments requires code/config changes.
 
-Open the database:
+## Database and catalogue ingestion
 
-```bash
-psql bookagent
-```
+1. Create a database (example):
 
-Enable pgvector:
+   ```bash
+   createdb bookagent
+   psql -d bookagent -c 'CREATE EXTENSION IF NOT EXISTS vector;'
+   ```
+
+2. Set the backend environment variables above.
+3. From the repository root, import a development subset:
+
+   ```bash
+   ./mvnw spring-boot:run -Dspring-boot.run.arguments="--ingest-1000"
+   ```
+
+   Or import the available full catalogue:
+
+   ```bash
+   ./mvnw spring-boot:run -Dspring-boot.run.arguments="--ingest-all"
+   ```
+
+The ingestion runner reads from the `combinedbooks` Solr core, normalizes metadata, stores book records and generates 512-dimensional embeddings using DashScope. Ingestion can take time and incur API charges. Verify available quota and catalogue access before starting a full import. The database itself is **not** bundled with the Git source.
+
+**Important:** The embedding model in this snapshot uses `vector(512)`. An older README referred to MiniLM and `vector(384)`; those instructions are obsolete. Do not blindly alter an existing populated embedding column to another dimension. For migrations from older embeddings, plan a clean re-embedding and schema migration.
+
+After ingestion, verify the local data source distribution:
 
 ```sql
-CREATE EXTENSION IF NOT EXISTS vector;
+SELECT source, COUNT(*)
+FROM books
+GROUP BY source
+ORDER BY COUNT(*) DESC;
 ```
 
-Exit PostgreSQL:
+Some tests specifically require `source = 'VA'`; a database containing only `rnib` records will not satisfy those tests even if retrieval works for its own data.
 
-```text
-\q
-```
+## Build and run locally
 
-### Embedding Column
-
-The current embedding model uses 384-dimensional embeddings.
-
-Check the `books` table:
+Backend (repository root):
 
 ```bash
-psql bookagent
-```
-
-Then:
-
-```text
-\d books
-```
-
-The table should contain an embedding column compatible with:
-
-```text
-vector(384)
-```
-
-If required:
-
-```sql
-ALTER TABLE books
-ADD COLUMN IF NOT EXISTS embedding vector(384);
-```
-
-
-### Environment Variables
-
-Configure the required environment variables before running the backend.
-
-```bash
-export DB_USERNAME='your-postgresql-username'
-export SOLR_USERNAME='your-solr-username'
-export SOLR_PASSWORD='your-solr-password'
-export DASHSCOPE_API_KEY='your-api-key'
-```
-
-Do not commit real credentials or API keys to the repository.
-
----
-
-## Catalogue Ingestion
-
-The backend supports ingestion of the RealSAM catalogue from the `combinedbooks` Solr core.
-
-The catalogue size is retrieved dynamically from Solr rather than being hard-coded in the application.
-
-### Local Development Catalogue Setup
-
-For local development and testing, a smaller catalogue subset can be ingested:
-
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--ingest-1000"
-```
-
-This ingests up to 1,000 catalogue records and is useful for local development without processing the entire catalogue.
-
-### Full Catalogue Setup
-
-For deployment or environments that require the complete catalogue, run:
-
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.arguments="--ingest-all"
-```
-
-The ingestion process:
-
-1. Retrieves the current catalogue size from the RealSAM `combinedbooks` Solr core.
-2. Fetches catalogue books in batches.
-3. Normalises catalogue metadata, including author names and descriptions.
-4. Stores the book metadata in PostgreSQL.
-5. Generates local MiniLM embeddings for books with usable descriptions.
-6. Skips embedding generation for books that already have an embedding.
-
-The ingestion process may take some time because embeddings are generated locally.
-
-Catalogue records and embeddings are stored in PostgreSQL and are not included when cloning the Git repository. Developers using separate local databases therefore need to perform catalogue ingestion before testing catalogue-based recommendations.
-
-Frontend-only developers connecting to an existing backend instance do not need to ingest the catalogue locally.
-
-### Normal Startup After Ingestion
-
-After the catalogue has been ingested, start the backend normally with:
-
-```bash
+./mvnw clean package -DskipTests
 ./mvnw spring-boot:run
 ```
 
-Do not include `--ingest-all` during normal development unless the local catalogue needs to be ingested or refreshed.
+Backend default: `http://localhost:8080`.
 
----
-
-## Running the Application
-
-The application consists of a Spring Boot backend and a React/Vite frontend.
-
-### Start the Backend
-
-From the project root:
-
-```bash
-./mvnw spring-boot:run
-```
-
-The backend runs on:
-
-```text
-http://localhost:8080
-```
-
-### Start the Frontend
-
-Open another terminal:
+Frontend (separate terminal):
 
 ```bash
 cd realsam-frontend
-```
-
-For the first run, install dependencies:
-
-```bash
-npm install
-```
-
-Start the development server:
-
-```bash
+npm ci
 npm run dev
 ```
 
-The frontend runs on:
+Frontend default Vite address: `http://localhost:5173`.
 
-```text
-http://localhost:5173
-```
+Open the frontend in a browser. The backend CORS controller annotations currently allow `http://localhost:5173`; a separately hosted frontend may require updating the backend CORS configuration.
 
-Keep both backend and frontend processes running when testing the complete application.
+## API reference
 
----
+The examples below are illustrative; actual records and recommendations depend on catalogue contents, profiles and model output.
 
-## API Documentation
+### Recommendations
 
-### Get Recommendations
-
-```http
-GET /chat
-```
-
-Parameters:
-
-| Parameter | Description |
-|---|---|
-| `userId` | ID of the current user or demo profile |
-| `message` | Natural-language recommendation request |
-
-Example:
+`GET /chat` with query parameters `userId` and `message`.
 
 ```bash
-curl -G "http://localhost:8080/chat" \
-  --data-urlencode "userId=science-reader" \
-  --data-urlencode "message=Recommend me an interesting book"
+curl -G 'http://localhost:8080/chat'   --data-urlencode 'userId=YOUR_DEMO_USER_ID'   --data-urlencode 'message=I want a romantic love story'
 ```
 
-A recommendation contains:
+The response is an object containing `recommendations`, an array of entries with fields including `recordId`, `title`, `author`, `description`, `reason`, `matchStrength`, `negativeConflict` and `rank`. The array may contain fewer than 10 entries.
 
-```json
-{
-  "recordId": "56415",
-  "title": "Example Book",
-  "author": "Example Author",
-  "description": "Book description...",
-  "rank": 1,
-  "reason": "Explanation of why this book matches the user."
-}
-```
-
-### Like a Book
-
-```http
-POST /feedback/like
-```
-
-Parameters:
-
-- `userId`
-- `bookId`
-
-Example:
+### Feedback
 
 ```bash
-curl -X POST \
-  "http://localhost:8080/feedback/like?userId=demo-user&bookId=56415"
+curl -X POST 'http://localhost:8080/feedback/like?userId=YOUR_DEMO_USER_ID&bookId=BOOK_RECORD_ID'
+curl -X POST 'http://localhost:8080/feedback/reject?userId=YOUR_DEMO_USER_ID&bookId=BOOK_RECORD_ID'
+curl 'http://localhost:8080/feedback/liked-books?userId=YOUR_DEMO_USER_ID'
+curl 'http://localhost:8080/feedback/rejected-books?userId=YOUR_DEMO_USER_ID'
 ```
 
-### Reject a Recommendation
+The POST endpoints take **query parameters**, not a JSON request body. The two GET feedback endpoints return book lists. Use IDs from `src/main/resources/demo-users.json` for the included demo profiles.
 
-```http
-POST /feedback/reject
-```
+## Testing and CI
 
-Parameters:
-
-- `userId`
-- `bookId`
-
-Example:
-
-```bash
-curl -X POST \
-  "http://localhost:8080/feedback/reject?userId=demo-user&bookId=56415"
-```
-
----
-
-## Demo Users
-
-The project includes predefined demo user profiles for demonstrating different recommendation behaviours.
-
-Examples include users interested in:
-
-- Science and technology
-- Romance
-- Mystery
-- History and adventure
-- Self-improvement
-- Gentle fiction
-
-Demo profiles are stored in:
-
-```text
-src/main/resources/demo-users.json
-```
-
-A demo profile may contain stated preferences, favourite books, liked authors, disliked subjects, reading history, previously rejected books, and saved books / reading-list interests.
-
-Runtime Like and Not For Me feedback is stored separately and can further influence future recommendations. 
-
-During repeated development testing, accumulated feedback for the same demo user may reduce the available recommendation pool. Development feedback can be cleared from the database when a clean test state is required.
-
----
-
-## Testing
-
-Compile the project:
-
-```bash
-./mvnw clean compile
-```
-
-Run the test suite:
+Run all backend tests:
 
 ```bash
 ./mvnw test
 ```
 
-Individual components can also be tested separately.
-
-### Embedding Model
+Run the main isolated recommendation/profile tests:
 
 ```bash
-./mvnw -Dtest=EmbeddingModelTest test
+./mvnw -Dtest=BookChatServiceTest test
+./mvnw -Dtest=UserPreferenceServiceTest test
 ```
 
-### Solr Connection
+Run frontend checks:
 
 ```bash
-./mvnw -Dtest=SolrClientServiceTest test
+cd realsam-frontend
+npm ci
+npm run lint
+npm run build
 ```
 
-### Solr Book Mapping
+GitHub Actions (`.github/workflows/ci.yml`) compiles the backend and runs selected Java test classes (recommendation, demo profiles, normalization, Solr mapping), then runs frontend lint and build on Node 22. **CI does not run the entire backend integration test suite.**
+
+**Known local test outcome (reported 25 October 2026):** A local `./mvnw test` run reported 40 tests: 37 passed, 1 failed, 1 errored and 1 skipped. `RealBookRetrievalTest` expected results from `VA`, but the local `books` table contained 1,001 `rnib` records and no `VA` records. This explains the empty-result assertion under the repository's source-filtered query. `BookEmbeddingRepositoryTest` raised `NoSuchElementException`; its exact precondition/failure cause still requires verification. These are environment-dependent integration tests; do not claim the full suite passes on every installation. Keep a clean test database and document its required fixtures.
+
+## Build and deployment
+
+### Backend JAR
 
 ```bash
-./mvnw -Dtest=SolrBookMapperServiceTest test
+./mvnw clean package -DskipTests
+java -jar target/*.jar
 ```
 
-### Book Ingestion
+### Backend Docker image
 
-Imports catalogue books into PostgreSQL and generates embeddings:
+The included `Dockerfile` builds with Temurin JDK 17 and runs on Temurin JRE 17:
 
 ```bash
-./mvnw -Dtest=BookIngestionServiceTest test
+docker build -t nextchapter-backend .
+docker run --rm -p 8080:8080   --env-file /ABSOLUTE/PATH/TO/private-backend.env   nextchapter-backend
 ```
 
-### Semantic Retrieval
+**Container networking:** The default JDBC host `localhost` means the container itself, not the host Mac. Set `DB_URL` to a database hostname reachable from the container. Provide all secrets through the deployment platform or a private env file. The Docker build uses `-DskipTests`; build success is not evidence of passing tests.
+
+### Frontend production build
 
 ```bash
-./mvnw -Dtest=RealBookRetrievalTest test
+cd realsam-frontend
+npm ci
+VITE_API_URL='https://YOUR-BACKEND-HOST' npm run build
 ```
 
----
+Deploy the generated `dist/` assets to a compatible static host. The repository includes `wrangler.jsonc` for a Cloudflare static-assets deployment, but no verified live URL, deployment account, custom domain or shutdown date is recorded in this README. Those must be confirmed by the deployment owner and documented in the handover.
 
-## Project Structure
+Before any public deployment, confirm CORS settings, database/network access, service credentials, API quotas, HTTPS, and whether the prototype should remain publicly accessible.
 
-A simplified project structure is:
+## Data and model information
 
-```text
-it-project/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── org/example/consultant/
-│   │   │       ├── aiservices/
-│   │   │       ├── controller/
-│   │   │       ├── model/
-│   │   │       ├── repository/
-│   │   │       └── service/
-│   │   └── resources/
-│   │       └── demo-users.json
-│   │
-│   └── test/
-│
-├── realsam-frontend/
-├── pom.xml
-└── README.md
-```
+- **Book catalogue:** Book metadata is obtained from RealSAM's Solr catalogue and stored in PostgreSQL for retrieval.
+- **User profiles:** Demo user profiles are provided in `src/main/resources/demo-users.json`.
+- **User feedback:** Like and rejection records are stored in PostgreSQL.
+- **Embedding model:** DashScope `text-embedding-v4` generates 512-dimensional embeddings for semantic retrieval.
+- **LLM:** A hosted model accessed through DashScope is used for intent extraction, candidate evaluation and recommendation explanations.
+- **Model training:** No custom models are trained as part of this project. The system uses externally hosted pretrained models.
+- **Data usage:** Access to and redistribution of catalogue data are subject to the relevant provider's permissions and restrictions.
 
----
+## Known limitations
 
-## Documentation
+- The system is a proof of concept using predefined demo user profiles, without production authentication or account management.
+- Recommendation generation depends on external services, including Solr and DashScope.
+- The number of recommendations may be reduced by filtering and evaluation.
+- Rejected recommendations are replaced from a finite reserve pool rather than through immediate regeneration.
+- Recommendation quality and response time depend on catalogue coverage, model performance and external API availability.
+- Some integration tests require specific catalogue data and database configurations.
+- Cloudflare deployment has not yet been confirmed as successful.
 
-The README provides the information required to understand, configure, run, and test the current prototype.
+## Additional documentation
 
-More detailed project documentation can be maintained separately, including:
+Project documentation and other handover materials are provided separately.
 
-- System architecture and design decisions
-- Recommendation engine design
-- LLM integration
-- Solr investigation
-- API design
-- Testing and evaluation
-- Development documentation
-
-A link to the team's documentation workspace can be added here when available.
+Refer to `STARTHERE.md` in the final handover package for a complete inventory of delivered files.
