@@ -96,7 +96,7 @@ class BookChatServiceTest {
         SearchIntent intent = new SearchIntent("warm friendship fiction", null, null, null);
 
         when(intentExtractionService.extractIntent(message)).thenReturn(intent);
-        when(retrievalService.findSimilarBooksByText("warm friendship fiction", 10))
+        when(retrievalService.findSimilarBooksByText("warm friendship fiction", 20))
                 .thenReturn(List.of(book("book-2", "Gentle Days", "A Writer", "A story about friendship.")));
         when(feedbackService.getRejectedBooks(userId)).thenReturn(List.of());
         when(preferenceService.buildPreferenceContext(userId)).thenReturn("likes warm stories");
@@ -107,7 +107,7 @@ class BookChatServiceTest {
 
         bookChatService.chat(userId, message);
 
-        verify(retrievalService).findSimilarBooksByText("warm friendship fiction", 10);
+        verify(retrievalService).findSimilarBooksByText("warm friendship fiction", 20);
         verify(retrievalService, never()).findByTitleOrAuthor(anyString(), anyString());
     }
 
@@ -131,7 +131,7 @@ class BookChatServiceTest {
 
         when(intentExtractionService.extractIntent(message))
                 .thenReturn(new SearchIntent("book request", null, null, null));
-        when(retrievalService.findSimilarBooksByText("book request", 10)).thenReturn(candidates);
+        when(retrievalService.findSimilarBooksByText("book request", 20)).thenReturn(candidates);
         when(feedbackService.getRejectedBooks(userId))
                 .thenReturn(List.of(new UserFeedback(userId, "live-rejected", "REJECTED")));
         when(preferenceService.buildPreferenceContext(userId)).thenReturn("profile preferences");
@@ -159,7 +159,7 @@ class BookChatServiceTest {
         SearchIntent intent = new SearchIntent("   ", null, null, null);
 
         when(intentExtractionService.extractIntent(message)).thenReturn(intent);
-        when(retrievalService.findSimilarBooksByText(message, 10))
+        when(retrievalService.findSimilarBooksByText(message, 20))
                 .thenReturn(List.of(book("book-3", "A Book", "Another Writer", "A useful description.")));
         when(feedbackService.getRejectedBooks(userId)).thenReturn(List.of());
         when(preferenceService.buildPreferenceContext(userId)).thenReturn("no history");
@@ -170,7 +170,7 @@ class BookChatServiceTest {
 
         bookChatService.chat(userId, message);
 
-        verify(retrievalService).findSimilarBooksByText(message, 10);
+        verify(retrievalService).findSimilarBooksByText(message, 20);
     }
 
     @Test
@@ -180,7 +180,7 @@ class BookChatServiceTest {
 
         when(intentExtractionService.extractIntent(message))
                 .thenReturn(new SearchIntent("specific request", null, null, null));
-        when(retrievalService.findSimilarBooksByText("specific request", 10)).thenReturn(List.of());
+        when(retrievalService.findSimilarBooksByText("specific request", 20)).thenReturn(List.of());
         when(feedbackService.getRejectedBooks(userId)).thenReturn(List.of());
         when(preferenceService.buildPreferenceContext(userId)).thenReturn("no history");
         when(aiService.chat(anyString(), anyString(), anyString()))
@@ -286,7 +286,7 @@ class BookChatServiceTest {
     private void stubSemanticChat(List<Book> candidates, List<BookRecommendation> recommendations) {
         when(intentExtractionService.extractIntent(anyString()))
                 .thenReturn(new SearchIntent("query", null, null, null));
-        when(retrievalService.findSimilarBooksByText("query", 10)).thenReturn(candidates);
+        when(retrievalService.findSimilarBooksByText("query", 20)).thenReturn(candidates);
         when(feedbackService.getRejectedBooks("reader")).thenReturn(List.of());
         when(preferenceService.buildPreferenceContext("reader")).thenReturn("no history");
         when(aiService.chat(anyString(), anyString(), anyString()))
