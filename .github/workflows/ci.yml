@@ -1,0 +1,69 @@
+name: NextChapter Quality Checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - integration/frontend-latest
+      - integration/production
+      - test/**
+
+jobs:
+  backend:
+    name: Backend — Core Logic and Demo Profiles
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Compile Java backend
+        run: ./mvnw -q -DskipTests compile
+
+      - name: Test recommendation retrieval, filtering and ranking
+        run: ./mvnw -q -Dtest=BookChatServiceTest test
+
+      - name: Test real demo profiles and feedback context
+        run: ./mvnw -q -Dtest=UserPreferenceServiceTest test
+
+      - name: Test catalogue metadata normalization
+        run: ./mvnw -q -Dtest=BookNormalizationServiceTest test
+
+      - name: Test Solr document mapping
+        run: ./mvnw -q -Dtest=SolrBookMapperServiceTest test
+
+  frontend:
+    name: Frontend — Lint and Production Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: realsam-frontend
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: realsam-frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check frontend code with ESLint
+        run: npm run lint
+
+      - name: Build frontend for production
+        run: npm run build

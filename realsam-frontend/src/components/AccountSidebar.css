@@ -1,0 +1,64 @@
+.section-label {
+  margin: 0 0 16px;
+  color: var(--colour-navy);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.account-card {
+  padding: 30px 24px;
+  border: 2px solid var(--colour-border);
+  border-radius: 18px;
+  background: var(--colour-white);
+  text-align: center;
+}
+
+.account-card__avatar {
+  display: grid;
+  width: 82px;
+  height: 82px;
+  margin: 0 auto 20px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--colour-navy);
+  background: #e7f5f3;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.account-card h2 {
+  margin: 0 0 10px;
+  color: var(--colour-navy);
+  font-size: 26px;
+}
+
+.account-card p {
+  margin: 0;
+  color: #61677d;
+  line-height: 1.5;
+}
+
+.account-sidebar__profile-link {
+  display: grid;
+  min-height: 58px;
+  margin-top: 20px;
+  place-items: center;
+  border: 2px solid var(--colour-navy);
+  border-radius: 10px;
+  color: var(--colour-navy);
+  background: var(--colour-white);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.account-sidebar__profile-link:hover {
+  color: var(--colour-white);
+  background: var(--colour-navy);
+}
+
+.account-sidebar__profile-link:focus-visible {
+  outline: 4px solid var(--colour-pink);
+  outline-offset: 3px;
+}

@@ -49,6 +49,60 @@ public class BookNormalizationService {
         return normalizedAuthors;
     }
 
+    public String normalizeDescription(String description) {
+        if (description == null) {
+            return null;
+        }
+
+        return description
+                // Common mojibake caused by UTF-8 text being decoded incorrectly
+                .replace("â", "–")
+                .replace("â", "—")
+                .replace("â", "’")
+                .replace("â", "‘")
+                .replace("â", "“")
+                .replace("â", "”")
+                .replace("Â ", " ")
+                .replace("Â", "")
+                // Clean up whitespace
+                .replace('\u00A0', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    public String cleanAuthorDisplay(String author) {
+        if (author == null) {
+            return null;
+        }
+
+        return author
+                .replace("Ã©", "é")
+                .replace("Ã¨", "è")
+                .replace("Ã¡", "á")
+                .replace("Ã­", "í")
+                .replace("Ã³", "ó")
+                .replace("Ãº", "ú")
+                .replace("Ã±", "ñ")
+                .replace("Â", "")
+                .replace('\u00A0', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    public List<String> cleanAuthorDisplays(List<String> authors) {
+        List<String> cleanedAuthors = new ArrayList<>();
+
+        if (authors == null) {
+            return cleanedAuthors;
+        }
+
+        for (String author : authors) {
+            cleanedAuthors.add(cleanAuthorDisplay(author));
+        }
+
+        return cleanedAuthors;
+    }
+
     public boolean hasUsableDescription(String description) {
         if (description == null) {
             return false;
@@ -65,6 +119,10 @@ public class BookNormalizationService {
 
     public Book normalizeBook(Book book) {
 
+        book.setAuthorsRaw(
+                cleanAuthorDisplays(book.getAuthorsRaw())
+        );
+
         book.setNormalizedTitle(
                 normalizeTitle(book.getTitle())
         );
@@ -73,10 +131,15 @@ public class BookNormalizationService {
                 normalizeAuthors(book.getAuthorsRaw())
         );
 
+        book.setDescription(
+                normalizeDescription(book.getDescription())
+        );
+
         book.setHasUsableDescription(
                 hasUsableDescription(book.getDescription())
         );
 
         return book;
     }
+
 }

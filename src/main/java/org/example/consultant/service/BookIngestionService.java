@@ -28,69 +28,101 @@ public class BookIngestionService {
     }
 
     public void ingestBooks(int rows) {
-
-        List<SolrBookDocument> documents =
-                solrClientService.fetchBooks(0, rows);
+        List<SolrBookDocument> documents = solrClientService.fetchBooks(0, rows);
 
         for (SolrBookDocument document : documents) {
-
             Book book = mapperService.toBook(document);
-
             bookRepository.save(book);
 
             if (book.isHasUsableDescription()) {
-
-                String text =
-                        book.getTitle() + ". " + book.getDescription();
-
-                String embedding =
-                        embeddingService.embedAsVectorString(text);
-
-                bookRepository.updateEmbedding(
-                        book.getRecordId(),
-                        embedding
-                );
+                String text = book.getTitle() + ". " + book.getDescription();
+                String embedding = embeddingService.embedAsVectorString(text);
+                bookRepository.updateEmbedding(book.getRecordId(), embedding);
             }
         }
     }
 
     public void ingestBooksInBatches(int totalBooks, int batchSize) {
-
         int start = 0;
 
         while (start < totalBooks) {
+            System.out.println("Ingesting books " + (start + 1) + "-"
+                    + Math.min(start + batchSize, totalBooks) + " / " + totalBooks);
 
             int rows = Math.min(batchSize, totalBooks - start);
-
-            List<SolrBookDocument> documents =
-                    solrClientService.fetchBooks(start, rows);
+            List<SolrBookDocument> documents = solrClientService.fetchBooks(start, rows);
 
             if (documents.isEmpty()) {
                 break;
             }
 
             for (SolrBookDocument document : documents) {
-
                 Book book = mapperService.toBook(document);
+                boolean alreadyHasEmbedding = bookRepository.hasEmbedding(book.getRecordId());
 
                 bookRepository.save(book);
 
-                if (book.isHasUsableDescription()) {
-
-                    String text =
-                            book.getTitle() + ". " + book.getDescription();
-
-                    String embedding =
-                            embeddingService.embedAsVectorString(text);
-
-                    bookRepository.updateEmbedding(
-                            book.getRecordId(),
-                            embedding
-                    );
+                if (book.isHasUsableDescription() && !alreadyHasEmbedding) {
+                    String text = book.getTitle() + ". " + book.getDescription();
+                    String embedding = embeddingService.embedAsVectorString(text);
+                    bookRepository.updateEmbedding(book.getRecordId(), embedding);
                 }
             }
 
             start += documents.size();
         }
+    }
+
+    public void ingestAllBooks(int batchSize) {
+        int totalBooks = solrClientService.fetchTotalBookCount();
+        System.out.println("Total books found in Solr: " + totalBooks);
+        ingestBooksInBatches(totalBooks, batchSize);
+    }
+
+    public int reembedMissing(int batchSize) {
+        int total = 0;
+        while (true) {
+            List<Book> books = bookRepository.findBooksMissingEmbedding(batchSize);
+            if (books.isEmpty()) break;
+
+            List<String> texts = books.stream()
+                    .map(b -> b.getTitle() + ". " + b.getDescription()).toList();
+
+            List<String> vectors = null;
+            for (int attempt = 1; attempt <= 5 && vectors == null; attempt++) {
+                try {
+                    vectors = embeddingService.embedBatch(texts);
+                } catch (Exception e) {
+                    try { Thread.sleep(2000L * attempt); }
+                    catch (InterruptedException ie) { Thread.currentThread().interrupt(); return total; }
+                }
+            }
+            if (vectors == null) throw new RuntimeException("embedding failed after retries");
+
+            for (int i = 0; i < books.size(); i++) {
+                bookRepository.updateEmbedding(books.get(i).getRecordId(), vectors.get(i));
+                total++;
+            }
+        }
+        return total;
+    }
+
+    public int ingestWithoutEmbedding(int startFrom, int totalBooks, int batchSize) {
+        int start = startFrom;
+        int saved = 0;
+        while (start < totalBooks) {
+            int rows = Math.min(batchSize, totalBooks - start);
+            List<SolrBookDocument> documents = solrClientService.fetchBooks(start, rows);
+            if (documents.isEmpty()) break;
+
+            for (SolrBookDocument document : documents) {
+                bookRepository.save(mapperService.toBook(document));
+                saved++;
+            }
+            start += documents.size();
+            System.out.println("ingested up to offset " + start);
+            try { Thread.sleep(200); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+        }
+        return saved;
     }
 }

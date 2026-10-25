@@ -16,7 +16,7 @@ The system recommends books from the RealSAM catalogue based on a user's natural
 - [Technology Stack](#technology-stack)
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
-- [Full Catalogue Ingestion](#full-catalogue-ingestion)
+- [Catalogue Ingestion](#catalogue-ingestion)
 - [Running the Application](#running-the-application)
 - [API Documentation](#api-documentation)
 - [Demo Users](#demo-users)
@@ -164,6 +164,12 @@ The main recommendation process is:
 8. Enrich the recommendation response with catalogue metadata.
 9. Return the ranked recommendations to the frontend.
 
+When at least 10 suitable candidate books are available, the backend returns 10 ranked recommendations. The frontend initially displays the top 3 recommendations.
+
+The remaining recommendations act as reserve recommendations. When a user selects **Not For Me**, the rejected book is removed from the displayed recommendations and the next ranked recommendation is shown without rerunning the full recommendation pipeline.
+
+The rejected book is also recorded as user feedback and is excluded from future recommendation requests for that user.
+
 User feedback can then update the preference information used by future recommendation requests.
 
 ---
@@ -280,13 +286,15 @@ ALTER TABLE books
 ADD COLUMN IF NOT EXISTS embedding vector(384);
 ```
 
+
 ### Environment Variables
 
-Configure the required environment variables before running services that access Solr or the LLM.
+Configure the required environment variables before running the backend.
 
 ```bash
-export SOLR_USERNAME='your-username'
-export SOLR_PASSWORD='your-password'
+export DB_USERNAME='your-postgresql-username'
+export SOLR_USERNAME='your-solr-username'
+export SOLR_PASSWORD='your-solr-password'
 export DASHSCOPE_API_KEY='your-api-key'
 ```
 
@@ -294,31 +302,42 @@ Do not commit real credentials or API keys to the repository.
 
 ---
 
-## Full Catalogue Ingestion
+## Catalogue Ingestion
 
-The backend supports ingestion of the full RealSAM VA catalogue from Solr.
+The backend supports ingestion of the RealSAM catalogue from the `combinedbooks` Solr core.
 
-At the time of testing, the VA Solr core contained **25,025 book records**. The catalogue size is retrieved dynamically from Solr rather than being hard-coded in the application.
+The catalogue size is retrieved dynamically from Solr rather than being hard-coded in the application.
 
-### First-Time Local Catalogue Setup
+### Local Development Catalogue Setup
 
-Developers using their own local PostgreSQL database should run the full catalogue ingestion once after completing the database and environment configuration.
+For local development and testing, a smaller catalogue subset can be ingested:
 
 ```bash
-./mvnw spring-boot:run -Dspring-boot.run.arguments=--ingest-all
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--ingest-1000"
+```
+
+This ingests up to 1,000 catalogue records and is useful for local development without processing the entire catalogue.
+
+### Full Catalogue Setup
+
+For deployment or environments that require the complete catalogue, run:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--ingest-all"
 ```
 
 The ingestion process:
 
-1. Retrieves the current catalogue size from the RealSAM VA Solr core.
+1. Retrieves the current catalogue size from the RealSAM `combinedbooks` Solr core.
 2. Fetches catalogue books in batches.
-3. Stores the book metadata in PostgreSQL.
-4. Generates local MiniLM embeddings for books with usable descriptions.
-5. Skips embedding generation for books that already have an embedding.
+3. Normalises catalogue metadata, including author names and descriptions.
+4. Stores the book metadata in PostgreSQL.
+5. Generates local MiniLM embeddings for books with usable descriptions.
+6. Skips embedding generation for books that already have an embedding.
 
-The ingestion process may take some time because embeddings are generated locally for the catalogue.
+The ingestion process may take some time because embeddings are generated locally.
 
-Catalogue records and embeddings are stored in PostgreSQL and are **not included when cloning the Git repository**. Therefore, developers using separate local databases need to perform the ingestion once.
+Catalogue records and embeddings are stored in PostgreSQL and are not included when cloning the Git repository. Developers using separate local databases therefore need to perform catalogue ingestion before testing catalogue-based recommendations.
 
 Frontend-only developers connecting to an existing backend instance do not need to ingest the catalogue locally.
 
@@ -477,7 +496,9 @@ src/main/resources/demo-users.json
 
 A demo profile may contain stated preferences, favourite books, liked authors, disliked subjects, reading history, previously rejected books, and saved books / reading-list interests.
 
-Runtime Like and Not For Me feedback is stored separately and can further influence future recommendations.
+Runtime Like and Not For Me feedback is stored separately and can further influence future recommendations. 
+
+During repeated development testing, accumulated feedback for the same demo user may reduce the available recommendation pool. Development feedback can be cleared from the database when a clean test state is required.
 
 ---
 

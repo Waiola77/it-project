@@ -11,6 +11,7 @@ import java.util.List;
 @Service
 public class SolrClientService {
 
+    private static final String SOLR_CORE = "combinedbooks";
     private final RestClient restClient;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -31,7 +32,7 @@ public class SolrClientService {
 
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/solr/VA/select")
+                        .path("/solr/" + SOLR_CORE + "/select")
                         .queryParam("q", "*:*")
                         .queryParam("rows", rows)
                         .queryParam("wt", "json")
@@ -44,7 +45,7 @@ public class SolrClientService {
 
         String json = restClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/solr/VA/select")
+                        .path("/solr/" + SOLR_CORE + "/select")
                         .queryParam("q", "*:*")
                         .queryParam("start", start)
                         .queryParam("rows", rows)
@@ -71,6 +72,40 @@ public class SolrClientService {
         } catch (Exception e) {
             throw new RuntimeException(
                     "Failed to parse Solr response",
+                    e
+            );
+        }
+    }
+
+    public int fetchTotalBookCount() {
+
+        String json = restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/solr/" + SOLR_CORE + "/select")
+                        .queryParam("q", "*:*")
+                        .queryParam("rows", 0)
+                        .queryParam("wt", "json")
+                        .build())
+                .retrieve()
+                .body(String.class);
+
+        if (json == null || json.isBlank()) {
+            return 0;
+        }
+
+        try {
+            SolrResponse result =
+                    objectMapper.readValue(json, SolrResponse.class);
+
+            if (result.getResponse() == null) {
+                return 0;
+            }
+
+            return result.getResponse().getNumFound();
+
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Failed to read Solr book count",
                     e
             );
         }
