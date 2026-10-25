@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 @Service
 public class BookChatService {
 
-    private static final int CANDIDATE_LIMIT = 10;
+    private static final int CANDIDATE_LIMIT = 20;
 
     private final BookRetrievalService retrievalService;
     private final BookRecommendationServices aiService;
