@@ -7,8 +7,6 @@ public class BookRecommendation {
     private String reason;
     private String author;
     private String description;
-    private String matchStrength;
-    private boolean negativeConflict;
     private int rank;
 
     public BookRecommendation() {
@@ -83,21 +81,5 @@ public class BookRecommendation {
 
     public void setRank(int rank) {
         this.rank = rank;
-    }
-
-    public String getMatchStrength() {
-        return matchStrength;
-    }
-
-    public void setMatchStrength(String matchStrength) {
-        this.matchStrength = matchStrength;
-    }
-
-    public boolean isNegativeConflict() {
-        return negativeConflict;
-    }
-
-    public void setNegativeConflict(boolean negativeConflict) {
-        this.negativeConflict = negativeConflict;
     }
 }

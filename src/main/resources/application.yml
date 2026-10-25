@@ -1,3 +1,10 @@
+langchain4j:
+  open_ai:
+    chat-model:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+      api-key: ${DASHSCOPE_API_KEY}
+      model-name: qwen-plus-0112
+
 spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/bookagent}
